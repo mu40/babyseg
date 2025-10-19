@@ -1,4 +1,4 @@
-# Base image with Python and BabySeg on path (eventually).
+# Base image with Python and BabySeg on `PATH`.
 FROM python:3.11-slim AS base
 ENV BABYSEG_HOME="/babyseg"
 ENV PATH="$BABYSEG_HOME:$PATH"
@@ -8,7 +8,6 @@ ENV PYTHONUSERBASE="$BABYSEG_HOME/env"
 # Intermediate stage.
 FROM base AS copy
 
-# Copy all checkpoints or use arg?
 ARG CHECKPOINT
 COPY --chmod=0755 docker/entrypoint.py $BABYSEG_HOME/
 COPY --chmod=0644 $CHECKPOINT $BABYSEG_HOME/checkpoints/

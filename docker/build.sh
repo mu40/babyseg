@@ -20,13 +20,6 @@ fi
 platform="$1"
 
 
-# Platform.
-if ! curl -sfI "https://download.pytorch.org/whl/$platform" >/dev/null; then
-    echo "ERROR: PyTorch platform \"$platform\" does not exist"
-    exit 1
-fi
-
-
 # Checkpoint.
 scripts/download.py
 checkpoint=$(find checkpoints/ -name 'babyseg.*.pt' | sort -V | tail -n1)

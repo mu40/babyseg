@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Run the spell checker, linter, and unit tests on every commit. The working
+# directory of this script will be the top level of the Git repository.
+
+set -e
+
+
+# Temporary storage. Single quotes on `$d` to expand now, not when signalled.
+d=$(mktemp -d "/tmp/$(basename "$0").XXXXXX")
+# shellcheck disable=SC2064
+trap "rm -rf -- '$d'" EXIT
+trap exit INT TERM
+
+
+# Identify relevant files. BusyBox's `awk` cannot print null characters.
+staged="$d/staged"
+python="$d/py"
+shell="$d/sh"
+git diff -z --staged --name-only --diff-filter=ACMRT           >"$staged"
+git diff -z --staged --name-only --diff-filter=ACMRT -- '*.py' >"$python"
+xargs -0r file -i <"$staged" |
+    awk -F: '/x-shellscript/ { print $1 }' |
+        tr '\n' '\0' >"$shell"
+
+
+# Copy the staged tree. In case of a partial commit, we want to run tests on
+# the staged files, not the working tree.
+git checkout-index --prefix="$d/" -a
+cd "$d"
+
+
+# Spell-check staged files.
+if [ -s "$staged" ]; then
+    echo "Spell-checking tree"
+    xargs -0 typos <"$staged"
+fi
+
+
+# Lint staged Python files.
+if [ -s "$python" ]; then
+    echo "Running Python linter"
+    xargs -0 ruff check -q <"$python"
+fi
+
+
+# Lint staged shell scripts.
+if [ -s "$shell" ]; then
+    echo "Linting shell scripts"
+    xargs -0 shellcheck <"$shell"
+fi
+
+
+# Run unit tests.
+echo "Running unit tests"
+pytest -q tests/unit

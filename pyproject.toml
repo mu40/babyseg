@@ -1,0 +1,34 @@
+[project]
+name = 'babyseg'
+requires-python = '>=3.11'
+
+[tool.pytest.ini_options]
+addopts = '--no-header'
+minversion = '6.0'
+testpaths = ['tests']
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select = ['B', 'D', 'E', 'F', 'N', 'RUF', 'Q', 'W', 'UP']
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = 'single'
+multiline-quotes = 'single'
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ['F401']  # unused-import
+"README.md" = ['E501']  # line-too-long
+
+[tool.ruff.lint.pydocstyle]
+convention = 'numpy'
+
+[tool.typos.default.extend-words]
+arange = 'arange'
+
+[tool.typos.files]
+extend-exclude = ['labels']

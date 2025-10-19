@@ -1,0 +1,11 @@
+.envrc
+.ipynb_checkpoints
+.shellcheckrc
+.venv
+__pycache__
+checkpoints
+data
+eval
+figures
+runs
+scratch

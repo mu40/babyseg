@@ -24,15 +24,16 @@ def main(argv=None):
     # Environment.
     home = os.getenv('BABYSEG_HOME')
     if not home:
-        print('Environment variable BABYSEG_HOME is unset', file=sys.stderr)
+        print('ERROR: environment variable BABYSEG_HOME is unset')
         exit(1)
 
     # Defaults.
     home = pathlib.Path(home)
-    babyseg.config.DEFAULT = home / 'config' / 'defaults.json'
+    config = home / 'config'
+    babyseg.config.DEFAULT = config / 'defaults.json'
     d = dict(
-        c=home / 'config' / 'babyseg.json',
-        k=home / 'models' / 'babyseg.v1.pt',
+        c=sorted(config.glob('babyseg.*.json'))[-1],
+        k=sorted((home / 'checkpoints').glob('babyseg.*.pt'))[-1],
         g=argparse.SUPPRESS,
         j=argparse.SUPPRESS,
         v=argparse.SUPPRESS,
@@ -73,7 +74,7 @@ def main(argv=None):
         arg['device'] = 'cuda'
 
     # Verbosity.
-    v = {0: 'WARNING', 1: 'INFO'}.get(arg.pop('verbose', 1), 'DEBUG')
+    v = {0: 'WARNING', 1: 'INFO'}.get(arg.pop('verbose', 0), 'DEBUG')
     logging.basicConfig(format='%(levelname)s: %(message)s', level=v)
     babyseg.eval.segment(**arg)
 

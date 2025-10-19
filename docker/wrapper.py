@@ -13,7 +13,7 @@ and preferred container tools. Override them by setting environment variables
 """
 
 # Container version tag.
-tag = '0.1'
+tag = '0.0'
 
 # Local image path for Apptainer, Singularity.
 sif_file = ''

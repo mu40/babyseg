@@ -1,38 +1,46 @@
 # Base image with Python and BabySeg on path (eventually).
 FROM python:3.11-slim AS base
-ENV FREESURFER_HOME="/freesurfer"
-ENV PYTHONUSERBASE="$FREESURFER_HOME/env"
-ENV PATH="$FREESURFER_HOME:$PATH"
+ENV BABYSEG_HOME="/babyseg"
+ENV PATH="$BABYSEG_HOME:$PATH"
+ENV PYTHONUSERBASE="$BABYSEG_HOME/env"
 
-# Intermediate stage with build requirements not needed in final image.
-FROM base AS build
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential
 
-# BabySeg from local folder.
-COPY --chmod=0755 segment.py $FREESURFER_HOME/
-COPY --chmod=0644 jane/config/defaults.json *.json *.pt *.zip $FREESURFER_HOME/
+# Intermediate stage.
+FROM base AS copy
+
+# Copy all checkpoints or use arg?
+ARG CHECKPOINT
+COPY --chmod=0755 docker/entrypoint.py $BABYSEG_HOME/
+COPY --chmod=0644 $CHECKPOINT $BABYSEG_HOME/checkpoints/
+COPY --chmod=0644 babyseg/ $BABYSEG_HOME/babyseg/
+COPY --chmod=0644 config/ $BABYSEG_HOME/config/
+COPY --chmod=0644 LICENSE $BABYSEG_HOME/
+RUN chmod -R +X $BABYSEG_HOME
+
+ARG PLATFORM=cpu
+RUN --mount=type=cache,target=/root/.cache \
+    pip install --user -i https://download.pytorch.org/whl/$PLATFORM \
+        torch==2.9.0
 
 RUN --mount=type=cache,target=/root/.cache \
-    pip3 install --user -i https://download.pytorch.org/whl/cpu torch==2.8.0
-
-RUN --mount=type=cache,target=/root/.cache \
-    pip3 install --user \
-        $FREESURFER_HOME/jane.zip \
+    pip install --user \
+        https://github.com/dalcalab/voxel/archive/24cb8b10d698dd1dbce14426080c954a50b27858.zip \
+        https://github.com/mu40/katy/archive/741f772c5ec8c2d1598dddae061e40e8c9a46722.zip \
         nibabel \
-        https://github.com/mu40/katy/archive/05b9e9d2d66967b9db0cc9373cf69f918a940308.zip \
-        https://github.com/dalcalab/voxel/archive/24cb8b10d698dd1dbce14426080c954a50b27858.zip 
+    && :
 
-# Build artifacts.
-RUN python3 -V >python.txt
-RUN python3 -m pip freeze >requirements.txt
+WORKDIR /artifacts
+RUN python -V >python.txt
+RUN pip freeze >requirements.txt
 
 
+# Build artifact stage.
 FROM scratch AS export
-COPY --from=build *.txt /
+COPY --from=copy /artifacts/*.txt /
 
 
-# Only copy files needed, once, to avoid unnecessary layers.
+# Copy once to avoid unnecessary layers.
 FROM base
-COPY --from=build $FREESURFER_HOME $FREESURFER_HOME
-ENTRYPOINT ["babyseg.py"]
+COPY --from=copy $BABYSEG_HOME $BABYSEG_HOME
+WORKDIR /mnt
+ENTRYPOINT ["entrypoint.py"]

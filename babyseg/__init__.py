@@ -3,6 +3,7 @@
 import importlib
 
 
+__version__ = '0.0'
 __all__ = (
     'config',
     'data',

@@ -58,7 +58,7 @@ def main(argv=None):
     p.add_argument('-g', dest='gpu', default=d['g'], action='store_true', help='enable GPU acceleration')
     p.add_argument('-o', dest='out_seg', help='output label map')
     p.add_argument('-p', dest='out_prob', help='output probability maps')
-    p.add_argument('-i', dest='out_lead', help='output conformed lead image')
+    p.add_argument('-l', dest='out_lead', help='output conformed lead image')
     p.add_argument('-j', dest='threads', default=d['j'], type=int, help='CPU threads (default: 1/core)')
     p.add_argument('-v', dest='verbose', default=d['v'], action='count', help='repeat to increase verbosity')
     # ruff: enable: E501

@@ -4,6 +4,7 @@
 # directory of this script will be the top level of the Git repository.
 
 set -e
+run_tests=${BABYSEG_PRECOMMIT_TEST:-1}
 
 
 # Temporary storage. Single quotes on `$d` to expand now, not when signalled.
@@ -52,5 +53,7 @@ fi
 
 
 # Run unit tests.
-echo "Running unit tests"
-pytest -q tests/unit
+if [ "$run_tests" -eq 1 ]; then
+    echo "Running unit tests"
+    pytest -q tests/unit
+fi

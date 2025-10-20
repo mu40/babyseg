@@ -1,0 +1,6 @@
+enable=all
+
+# SC1091: Avoid following sourced files that are absent when linting.
+# SC2244: Stop complaining about missing -n when checking non-empty string.
+# SC2250: Do not warn about optional braces around variables.
+disable=SC1091,SC2244,SC2250

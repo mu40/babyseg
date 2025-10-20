@@ -56,4 +56,5 @@ cat >.envrc <<EOF
 [ -d "$ENV" ] && . "$ENV/bin/activate"
 export PYTHONPATH="$PWD"
 export CUDA_VISIBLE_DEVICES=0
+export BABYSEG_DOCKER_NAME='freesurfer/babyseg'
 EOF

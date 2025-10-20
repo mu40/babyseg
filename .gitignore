@@ -1,7 +1,6 @@
 *.sif
 .envrc
 .ipynb_checkpoints
-.shellcheckrc
 .venv
 __pycache__
 checkpoints

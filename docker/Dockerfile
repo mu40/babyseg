@@ -13,6 +13,7 @@ COPY --chmod=0755 docker/entrypoint.py $BABYSEG_HOME/
 COPY --chmod=0644 $CHECKPOINT $BABYSEG_HOME/checkpoints/
 COPY --chmod=0644 babyseg/ $BABYSEG_HOME/babyseg/
 COPY --chmod=0644 config/ $BABYSEG_HOME/config/
+COPY --chmod=0644 labels/baby.loss.json $BABYSEG_HOME/labels/
 COPY --chmod=0644 LICENSE $BABYSEG_HOME/
 RUN chmod -R +X $BABYSEG_HOME
 

@@ -28,6 +28,7 @@ import shutil
 import signal
 import subprocess
 import sys
+# ruff: enable: E402
 
 
 # Environment variables. Override settings above.
@@ -99,7 +100,7 @@ if tool in ('docker', 'podman'):
 # the same. The working directory is also the same, unless we set it.
 if tool in ('apptainer', 'singularity'):
     arg = ('run', '--pwd', '/mnt', '-e', f'-B{host}:/mnt', sif_file)
-    if '-' in tag:
+    if '-cu' in tag:
         arg = (arg[0], '--nv', *arg[1:])
 
     if not os.path.isfile(sif_file):

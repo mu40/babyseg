@@ -148,6 +148,7 @@ def segment(
     # Label map.
     if out_seg:
         labels = config['synthesis']['kwargs']['optimize']
+        labels = bs.config.qualify_path(labels)
         logger.debug('remapping one-hot to labels using "%s"', labels)
         lut = list(map(int, katy.io.load(labels)))
         lut = torch.tensor(lut, dtype=torch.uint8, device=device)

@@ -29,7 +29,7 @@ def load(*files):
     Parameters
     ----------
     *files : os.PathLike, optional
-        JSON files, each containing a `dict`.
+        JSON files, each containing a `dict`. Will run through `qualify_path`.
 
     Returns
     -------
@@ -59,10 +59,10 @@ def load(*files):
     out = {}
     if DEFAULTS:
         logger.debug('loading default configuration from "%s"', DEFAULTS)
-        out = read(DEFAULTS)
+        out = read(qualify_path(DEFAULTS))
 
     names = []
-    for f in map(pathlib.Path, files):
+    for f in map(qualify_path, files):
         names.append(f.stem)
         out = merge(out, read(f))
 
@@ -269,6 +269,43 @@ def device(device):
 
     logger.info('confirmed availability of %s', device)
     return device
+
+
+def qualify_path(path):
+    """Interpret paths relative to `BABYSEG_HOME` if needed for portability.
+
+    Prepends the directory set in environment variable `BABYSEG_HOME` to
+    relative paths that do not exist. Other paths will be returned unchanged.
+
+    Parameters
+    ----------
+    path : os.PathLike
+        Path to interpret.
+
+    Returns
+    -------
+    pathlib.Path
+        Path, possibly prefixed with `BABYSEG_HOME`.
+
+    """
+    p = pathlib.Path(path)
+    if p.is_absolute():
+        logger.debug('not qualifying absolute path "%s"', p)
+        return p
+
+    if p.exists():
+        logger.debug('not qualifying existing relative path "%s"', p)
+        return p
+
+    logger.info('encountered nonexistent relative path "%s"', p)
+    home = os.getenv('BABYSEG_HOME')
+    if home:
+        logger.info('found environment variable BABYSEG_HOME="%s"', home)
+        logger.info('qualifying path by prepending BABYSEG_HOME to "%s"', p)
+        return home / p
+
+    logger.warning('not qualifying path because BABYSEG_HOME unset')
+    return p
 
 
 def git_status(path, *pathspec, timeout=10):

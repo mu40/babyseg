@@ -30,7 +30,7 @@ def main(argv=None):
     # Defaults.
     home = pathlib.Path(home)
     config = home / 'config'
-    babyseg.config.DEFAULT = config / 'defaults.json'
+    babyseg.config.DEFAULTS = config / 'defaults.json'
     d = dict(
         c=sorted(config.glob('babyseg.*.json'))[-1],
         k=sorted((home / 'checkpoints').glob('babyseg.*.pt'))[-1],

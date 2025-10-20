@@ -14,23 +14,22 @@ import sys
 
 logger = logging.getLogger(__name__)
 _cache = {}
-DEFAULT = 'config/defaults.json'
+DEFAULTS = 'config/defaults.json'
 
 
-def load(*files, defaults=DEFAULT):
+def load(*files):
     """Successively load settings from JSON files.
 
     The function loads files successively, overriding prior entries unless they
     are dictionaries, which it will merge. However, if the dictionary in the
     current file includes the key `clear`, and its value is True, then the new
-    dictionary will replace the existing entry.
+    dictionary will replace the existing entry. The function always parses
+    defaults from `DEFAULTS` first, if truthy.
 
     Parameters
     ----------
     *files : os.PathLike, optional
         JSON files, each containing a `dict`.
-    defaults : os.PathLike, optional
-        Default settings. Parsed first, even if `files` is empty.
 
     Returns
     -------
@@ -57,9 +56,11 @@ def load(*files, defaults=DEFAULT):
 
         return old
 
-    # Absolute root directory.
-    logger.debug('loading default configuration from "%s"', defaults)
-    out = read(defaults)
+    out = {}
+    if DEFAULTS:
+        logger.debug('loading default configuration from "%s"', DEFAULTS)
+        out = read(DEFAULTS)
+
     names = []
     for f in map(pathlib.Path, files):
         names.append(f.stem)

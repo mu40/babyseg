@@ -109,7 +109,7 @@ def segment(
     ori = config['eval']['orientation']
     spacing = config['eval']['spacing']
     lead = vx.load_volume(images[0]).to(device).float()
-    conf = lead.reorient(ori).resample(spacing).crop_to_nonzero()
+    conf = lead.reorient(ori).crop_to_nonzero().resample(spacing)
     logger.info('reoriented lead image to "%s"', ori)
     logger.info('resampled lead image to voxel spacing %s mm', spacing)
     logger.info('cropped lead image to bounding box %s', conf.baseshape)

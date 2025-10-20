@@ -41,6 +41,7 @@ def main(argv=None):
 
     # Arguments.
     p = argparse.ArgumentParser(
+        prog='babyseg',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         epilog='Website: https://w3id.org/babyseg',
         description='''

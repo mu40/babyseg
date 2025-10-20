@@ -99,7 +99,6 @@ def segment(
         exit(1)
 
     # Model.
-    device = torch.device(device)
     if threads is not None:
         torch.set_num_threads(threads)
 

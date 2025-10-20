@@ -43,6 +43,10 @@ def env(key, default):
 tag = env('BABYSEG_TAG', tag)
 f = os.path.join(os.path.dirname(__file__), f'babyseg_{tag}.sif')
 sif_file = env('BABYSEG_SIF', sif_file if sif_file else f)
+
+gpu = any(f in os.path.basename(sif_file) for f in ('-cu', '-gpu'))
+gpu = env('BABYSEG_GPU', gpu)
+
 tools = env('BABYSEG_TOOL', tools)
 if isinstance(tools, str):
     tools = (tools,)
@@ -100,7 +104,7 @@ if tool in ('docker', 'podman'):
 # the same. The working directory is also the same, unless we set it.
 if tool in ('apptainer', 'singularity'):
     arg = ('run', '--pwd', '/mnt', '-e', f'-B{host}:/mnt', sif_file)
-    if '-cu' in tag:
+    if gpu:
         arg = (arg[0], '--nv', *arg[1:])
 
     if not os.path.isfile(sif_file):

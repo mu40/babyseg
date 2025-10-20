@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Set up a virtual Python environment for development, update requirements.
+# Build a Docker image using the latest checkpoint and given PyTorch platform.
 
 
 # Environment.

@@ -98,7 +98,9 @@ if tool in ('docker', 'podman'):
 # For Apptainer or Singularity, the users inside and outside the container are
 # the same. The working directory is also the same, unless we set it.
 if tool in ('apptainer', 'singularity'):
-    arg = ('run', '--nv', '--pwd', '/mnt', '-e', f'-B{host}:/mnt', sif_file)
+    arg = ('run', '--pwd', '/mnt', '-e', f'-B{host}:/mnt', sif_file)
+    if '-' in tag:
+        arg = (arg[0], '--nv', *arg[1:])
 
     if not os.path.isfile(sif_file):
         print(f'Cannot find image {sif_file}, pulling it', file=sys.stderr)

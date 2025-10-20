@@ -1,3 +1,4 @@
+*.sif
 .envrc
 .ipynb_checkpoints
 .shellcheckrc

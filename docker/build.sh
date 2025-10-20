@@ -26,15 +26,14 @@ checkpoint=$(find checkpoints/ -name 'babyseg.*.pt' | sort -V | tail -n1)
 
 
 # Version tag.
-version=$(python -c 'import babyseg; print(babyseg.__version__)')
-tag="$BABYSEG_DOCKER_NAME:$version"
+tag=$(python -c 'import babyseg; print(babyseg.__version__)')
 [ "$platform" = cpu ] || tag="${tag}-${platform}"
 
 
 # Build, cleanup.
 docker build \
     -f "docker/Dockerfile" \
-    -t "$tag" \
+    -t "$BABYSEG_DOCKER_NAME:$tag" \
     --build-arg "CHECKPOINT=$checkpoint" \
     --build-arg "PLATFORM=$platform" \
     .

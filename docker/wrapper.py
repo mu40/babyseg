@@ -24,6 +24,7 @@ tools = ('docker', 'apptainer', 'singularity', 'podman')
 
 # ruff: noqa: E402
 import os
+import pathlib
 import shutil
 import signal
 import subprocess
@@ -36,15 +37,16 @@ def env(key, default):
     """Return environment variable or default value."""
     value = os.getenv(key)
     if value:
-        print(f'Applying environment variable {key}={value}')
+        print(f'Applying environment variable {key}="{value}"')
         return value
     return default
 
 tag = env('BABYSEG_TAG', tag)
-f = os.path.join(os.path.dirname(__file__), f'babyseg_{tag}.sif')
+f = pathlib.Path(__file__).parent / f'babyseg_{tag}.sif'
 sif_file = env('BABYSEG_SIF', sif_file if sif_file else f)
+sif_file = pathlib.Path(sif_file)
 
-gpu = any(f in os.path.basename(sif_file) for f in ('-cu', '-gpu'))
+gpu = any(f in sif_file.name for f in ('-cu', '-gpu'))
 gpu = env('BABYSEG_GPU', gpu)
 
 tools = env('BABYSEG_TOOL', tools)
@@ -55,17 +57,18 @@ if isinstance(tools, str):
 # Report version. Avoid errors when piping, for example, to `head`.
 signal.signal(signal.SIGPIPE, handler=signal.SIG_DFL)
 hub = 'https://hub.docker.com/u/freesurfer'
-print(f'Running BabySeg version {tag} from {hub}')
+print(f'Running BabySeg version "{tag}" from {hub}')
 
 
 # Find a container system.
 for tool in tools:
-    path = shutil.which(tool)
-    if path:
-        print(f'Using {path} to manage containers')
+    tool = shutil.which(tool)
+    if tool:
+        tool = pathlib.Path(tool)
+        print(f'Selected "{tool}" to manage containers')
         break
 
-if not path:
+else:
     print(f'Cannot find container tool {tools} in PATH', file=sys.stderr)
     exit(1)
 
@@ -74,11 +77,11 @@ if not path:
 # which we made the working directory when building the image. Docker and
 # Podman require absolute paths.
 host = os.getenv('SUBJECTS_DIR', os.getcwd())
-host = os.path.abspath(host)
+host = pathlib.Path(host).absolute()
 print(f'Will bind /mnt in container to SUBJECTS_DIR="{host}"')
 
 image = f'freesurfer/babyseg:{tag}'
-if tool != 'docker':
+if tool.name != 'docker':
     image = f'docker://{image}'
 
 
@@ -88,13 +91,13 @@ if tool != 'docker':
 # is what we want. If we set UID and GID inside the container to the non-root
 # host user as for Docker, then these would get remapped according to
 # /etc/subuid outside, causing problems with read and write permissions.
-if tool in ('docker', 'podman'):
+if tool.name in ('docker', 'podman'):
     arg = ('run', '--rm', '-v', f'{host}:/mnt')
 
     # Pretty-print help text.
     if sys.stdout.isatty():
         arg = (*arg, '-t')
-    if tool == 'docker':
+    if 'docker' in tool.name:
         arg = (*arg, '-u', f'{os.getuid()}:{os.getgid()}')
 
     arg = (*arg, image)
@@ -102,20 +105,25 @@ if tool in ('docker', 'podman'):
 
 # For Apptainer or Singularity, the users inside and outside the container are
 # the same. The working directory is also the same, unless we set it.
-if tool in ('apptainer', 'singularity'):
-    arg = ('run', '--pwd', '/mnt', '-e', f'-B{host}:/mnt', sif_file)
+elif tool.name in ('apptainer', 'singularity'):
+    arg = ('run', '--pwd', '/mnt', '-e', '-B', f'{host}:/mnt', sif_file)
     if gpu:
         arg = (arg[0], '--nv', *arg[1:])
 
-    if not os.path.isfile(sif_file):
-        print(f'Cannot find image {sif_file}, pulling it', file=sys.stderr)
+    if not sif_file.exists():
+        print(f'Cannot find image "{sif_file}", pulling it', file=sys.stderr)
         p = subprocess.run((tool, 'pull', sif_file, image))
         if p.returncode:
             exit(p.returncode)
 
 
+else:
+    print(f'Cannot set up container tool "{tool}"', file=sys.stderr)
+    exit(1)
+
+
 # Summary, launch.
-print('Command:', ' '.join((tool, *arg)))
+print('Command:', tool, *arg)
 print('BabySeg arguments:', *sys.argv[1:])
 p = subprocess.run((tool, *arg, *sys.argv[1:]))
 exit(p.returncode)

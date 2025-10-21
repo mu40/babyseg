@@ -3,6 +3,7 @@
 
 import argparse
 import babyseg
+import collections
 import logging
 import os
 import pathlib
@@ -24,18 +25,14 @@ def main(argv=None):
     # Environment.
     home = os.getenv('BABYSEG_HOME')
     if not home:
-        print('ERROR: environment variable BABYSEG_HOME is unset')
+        print('ERROR: no environment variable BABYSEG_HOME', file=sys.stderr)
         exit(1)
 
     # Defaults.
     home = pathlib.Path(home)
-    d = dict(
-        c=sorted((home / 'config').glob('babyseg.*.json'))[-1],
-        k=sorted((home / 'checkpoints').glob('babyseg.*.pt'))[-1],
-        g=argparse.SUPPRESS,
-        j=argparse.SUPPRESS,
-        v=argparse.SUPPRESS,
-    )
+    d = collections.defaultdict(lambda: argparse.SUPPRESS)
+    d['c'] = sorted((home / 'config').glob('babyseg.*.json'))[-1]
+    d['k'] = sorted((home / 'checkpoints').glob('babyseg.*.pt'))[-1]
 
     # Arguments.
     p = argparse.ArgumentParser(
@@ -61,9 +58,14 @@ def main(argv=None):
     p.add_argument('-l', dest='out_lead', help='output conformed lead image')
     p.add_argument('-j', dest='threads', default=d['j'], type=int, help='CPU threads (default: 1/core)')
     p.add_argument('-v', dest='verbose', default=d['v'], action='count', help='repeat to increase verbosity')
+    p.add_argument('-V', version=babyseg.__version__, action='version', help='print version and exit')
     # ruff: enable: E501
 
-    if len(sys.argv) == 1:
+    if argv is None:
+        argv = sys.argv[1:]
+
+    # Early exit.
+    if len(argv) == 0:
         p.print_usage()
         exit(0)
 

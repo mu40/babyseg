@@ -1,11 +1,4 @@
-*.sif
 .envrc
 .ipynb_checkpoints
 .venv
 __pycache__
-checkpoints
-data
-eval
-figures
-runs
-scratch

@@ -1,4 +1,4 @@
-"""System tests for requirement install."""
+"""Tests for requirement install."""
 
 import subprocess
 import sys

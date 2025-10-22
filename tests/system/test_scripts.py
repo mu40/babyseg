@@ -1,4 +1,4 @@
-"""System tests for scripts."""
+"""Tests for scripts."""
 
 import pathlib
 import subprocess

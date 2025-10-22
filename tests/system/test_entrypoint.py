@@ -1,4 +1,4 @@
-"""System tests for scripts."""
+"""Tests for container entry point."""
 
 import babyseg
 import docker.entrypoint

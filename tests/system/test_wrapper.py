@@ -77,6 +77,21 @@ def test_tool_unknown(mock_tool):
     assert run_wrapper().returncode
 
 
+@pytest.mark.parametrize('name', TOOLS_ALL)
+def test_user(mock_tool, monkeypatch, name):
+    """Test which tools specify user and group."""
+    tool, log = mock_tool(name)
+    sif = tool.parent / 'image.sif'
+    sif.touch()
+    monkeypatch.setenv('BABYSEG_SIF', str(sif))
+    assert not run_wrapper().returncode
+
+    # Expect UID, GID setting only for Docker.
+    is_docker = name == 'docker'
+    is_user = f'{os.getuid()}:{os.getgid()}' in log.read_text().split()
+    assert is_user == is_docker
+
+
 def test_docker_run(mock_tool, monkeypatch):
     """Test the presence of flags in a Docker call."""
     tag = '0.0'
@@ -88,20 +103,8 @@ def test_docker_run(mock_tool, monkeypatch):
     assert out[0] == str(tool)
     assert out[1] == 'run'
     assert '--rm' in out
-    assert f'{os.getuid()}:{os.getgid()}' in out
     assert f'{os.getcwd()}:/mnt' in out
     assert out[-1] == os.getenv('BABYSEG_DOCKER_NAME') + f':{tag}'
-
-
-def test_podman_run(mock_tool, monkeypatch):
-    """Test the absence of flags in a Podman call."""
-    tag = '0.0'
-    _, log = mock_tool('podman')
-    monkeypatch.setenv('BABYSEG_TAG', tag)
-    assert not run_wrapper().returncode
-
-    # Expect no UID, GID setting for Podman.
-    assert f'{os.getuid()}:{os.getgid()}' not in log.read_text()
 
 
 @pytest.mark.parametrize('name', TOOLS_SIF)

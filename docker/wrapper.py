@@ -3,13 +3,10 @@
 
 Pulls a container from Docker Hub and mounts the host directory set by
 environment variable `SUBJECTS_DIR` to `/mnt` in the container, which serves as
-its working directory. If unset, `SUBJECTS_DIR` defaults to your current
-directory. Thus, BabySeg can access relative paths under it without requiring
-you to set `SUBJECTS_DIR` explicitly.
+its working directory. If unset, `SUBJECTS_DIR` defaults to the current
+directory. Thus, BabySeg can access relative paths under it without setting
+`SUBJECTS_DIR` explicitly.
 
-The editable settings below control the container version, local image path,
-and preferred container tools. Override them by setting environment variables
-`BABYSEG_TAG`, `BABYSEG_SIF`, and `BABYSEG_TOOL`.
 """
 
 import os
@@ -19,6 +16,10 @@ import signal
 import subprocess
 import sys
 
+
+# Settings. Adjust the values below to control the container version, local
+# image path, and preferred container tools. You can override them by setting
+# environment variables `BABYSEG_TAG`, `BABYSEG_SIF`, and `BABYSEG_TOOL`.
 
 # Container version tag.
 tag = '0.0'

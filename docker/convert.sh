@@ -23,7 +23,7 @@ tag=$(python -c 'import babyseg; print(babyseg.__version__)')
 image="$BABYSEG_DOCKER_NAME:$tag"
 
 
-# Build, cleanup.
+# Build.
 out="$(basename "$image" | tr ':' '_')"
 out="$out_dir/$out.sif"
 apptainer build -f "$out" "docker-daemon://$image"

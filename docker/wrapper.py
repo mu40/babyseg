@@ -46,9 +46,6 @@ f = pathlib.Path(__file__).parent / f'babyseg_{tag}.sif'
 sif_file = env('BABYSEG_SIF', sif_file if sif_file else f)
 sif_file = pathlib.Path(sif_file)
 
-gpu = any(f in sif_file.name for f in ('-cu', '-gpu'))
-gpu = env('BABYSEG_GPU', gpu)
-
 tools = env('BABYSEG_TOOL', tools)
 if isinstance(tools, str):
     tools = (tools,)
@@ -107,7 +104,7 @@ if tool.name in ('docker', 'podman'):
 # the same. The working directory is also the same, unless we set it.
 elif tool.name in ('apptainer', 'singularity'):
     arg = ('run', '--pwd', '/mnt', '-e', '-B', f'{host}:/mnt', sif_file)
-    if gpu:
+    if any(f in sif_file.name for f in ('-cu', '-gpu')):
         arg = (arg[0], '--nv', *arg[1:])
 
     if not sif_file.exists():

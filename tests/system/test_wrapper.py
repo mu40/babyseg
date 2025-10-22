@@ -1,4 +1,4 @@
-"""System tests for the wrapper script."""
+"""Tests for the wrapper script."""
 
 import os
 import pathlib
@@ -72,7 +72,7 @@ def test_tool_missing(monkeypatch):
 
 
 def test_tool_unknown(mock_tool):
-    """Test if setting an unknown tool that does exist raises an error."""
+    """Test if setting an unknown but existing tool raises an error."""
     mock_tool('fancy-container-tool')
     assert run_wrapper().returncode
 
@@ -106,7 +106,7 @@ def test_podman_run(mock_tool, monkeypatch):
 
 @pytest.mark.parametrize('name', TOOLS_SIF)
 def test_sif_absent(mock_tool, monkeypatch, name):
-    """Test the behavior when default SIF file is missing."""
+    """Test behavior when default SIF file is missing."""
     tag = 'absent'
     tool, log = mock_tool(name)
     monkeypatch.setenv('BABYSEG_TAG', tag)
@@ -160,18 +160,8 @@ def test_bind_mount(mock_tool, monkeypatch, name):
 
 
 @pytest.mark.parametrize('name', TOOLS_SIF)
-def test_gpu_environment(mock_tool, monkeypatch, name):
-    """Test enabling Apptainer GPU support via environment variable."""
-    _, log = mock_tool(name)
-    monkeypatch.setenv('BABYSEG_GPU', '1')
-
-    assert not run_wrapper().returncode
-    assert '--nv' in log.read_text().split()
-
-
-@pytest.mark.parametrize('name', TOOLS_SIF)
-def test_gpu_filename(mock_tool, monkeypatch, name):
-    """Test enabling Apptainer GPU support via image name."""
+def test_gpu(mock_tool, monkeypatch, name):
+    """Test enabling GPU support via SIF image file name."""
     tool, log = mock_tool(name)
 
     # Expect GPU support for `-cu` or `-gpu` in file name.

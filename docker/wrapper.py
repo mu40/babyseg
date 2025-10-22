@@ -12,6 +12,14 @@ and preferred container tools. Override them by setting environment variables
 `BABYSEG_TAG`, `BABYSEG_SIF`, and `BABYSEG_TOOL`.
 """
 
+import os
+import pathlib
+import shutil
+import signal
+import subprocess
+import sys
+
+
 # Container version tag.
 tag = '0.0'
 
@@ -20,16 +28,6 @@ sif_file = ''
 
 # Container tool preference. Checked left to right.
 tools = ('docker', 'apptainer', 'singularity', 'podman')
-
-
-# ruff: noqa: E402
-import os
-import pathlib
-import shutil
-import signal
-import subprocess
-import sys
-# ruff: enable: E402
 
 
 # Environment variables. Override settings above.
@@ -66,7 +64,7 @@ for tool in tools:
         break
 
 else:
-    print(f'Cannot find container tool {tools} in PATH', file=sys.stderr)
+    print(f'Cannot locate container tool {tools}', file=sys.stderr)
     exit(1)
 
 
@@ -115,7 +113,7 @@ elif tool.name in ('apptainer', 'singularity'):
 
 
 else:
-    print(f'Cannot set up container tool "{tool}"', file=sys.stderr)
+    print(f'Cannot set up unknown container tool "{tool}"', file=sys.stderr)
     exit(1)
 
 

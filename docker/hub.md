@@ -29,7 +29,7 @@ Download and run the script, which auto-detects container tools in your `PATH`:
 ```
 curl -Lo babyseg get.babyseg.io
 chmod +x babyseg
-./babyseg
+./babyseg -h
 ```
 
 

@@ -98,7 +98,7 @@ if tool.name in ('docker', 'podman'):
 # the same. The working directory is also the same, unless we set it.
 elif tool.name in ('apptainer', 'singularity'):
     if not sif.parent.is_dir():
-        print(f'Did not find a directory at "{sif.parent}"', file=sys.stderr)
+        print('BABYSEG_SIF does not point to a directory', file=sys.stderr)
         exit(1)
 
     if not sif.exists():

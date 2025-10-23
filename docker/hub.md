@@ -35,26 +35,27 @@ chmod +x babyseg
 
 ## Optional settings
 
-You can control BabySeg's behavior either by setting environment variables or by editing the top of the script.
+You can control BabySeg's behavior by setting environment variables or by editing the top of the script.
 Environment variables take precedence.
-For example, to use an existing SIF file in your home directory:
+For example, to use a GPU image in your home directory, downloading it if it does not exist:
 
 ```
-export BABYSEG_SIF="$HOME/babyseg_0.0.sif"
+export BABYSEG_TAG="0.0-cu126"
+export BABYSEG_SIF="$HOME"
 ./babyseg
 ```
 
 To use Apptainer, even if Docker is also installed:
 ```
-BABYSEG_SIF=apptainer ./babyseg
+BABYSEG_TOOL=apptainer ./babyseg
 ```
 
-| Variable       | Purpose                                             | Default                                                       |
-|:---------------|:----------------------------------------------------|:--------------------------------------------------------------|
-| `BABYSEG_MNT`  | Define the working directory inside the container   | Your current working directory                                |
-| `BABYSEG_SIF`  | Specify the Apptainer or Singularity image path     | File `babyseg_${BABYSEG_TAG}.sif` in the script's directory   |
-| `BABYSEG_TAG`  | Select a newer or GPU image tag                     | Latest CPU-only tag                                           |
-| `BABYSEG_TOOL` | Find a container tool in `PATH` or by absolute path | First found of `docker`, `apptainer`, `singularity`, `podman` |
+| Variable       | Purpose                                                | Default                                                       |
+|:---------------|:-------------------------------------------------------|:--------------------------------------------------------------|
+| `BABYSEG_MNT`  | Define the working directory inside the container      | Your current working directory                                |
+| `BABYSEG_SIF`  | Control where to store Apptainer or Singularity images | The directory containing the BabySeg script                   |
+| `BABYSEG_TAG`  | Select a newer or GPU image tag                        | Latest CPU-only tag                                           |
+| `BABYSEG_TOOL` | Find a container tool in `PATH` or by absolute path    | First found of `docker`, `apptainer`, `singularity`, `podman` |
 
 
 ## Path resolution

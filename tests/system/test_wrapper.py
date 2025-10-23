@@ -46,7 +46,22 @@ def run_wrapper():
 
 def test_environment(monkeypatch):
     """Test the test environment."""
-    assert os.getenv('BABYSEG_DOCKER_NAME') is not None
+    name = os.getenv('BABYSEG_DOCKER_NAME')
+    assert name is not None
+    assert not name.startswith('/')
+    assert not name.endswith('/')
+    assert '/' in name
+
+
+def construct_sif_file(folder, tag, touch=False):
+    """Construct SIF file path from folder, tag, and `BABYSEG_DOCKER_NAME`."""
+    f = os.getenv('BABYSEG_DOCKER_NAME')
+    f = pathlib.Path(f).name
+    f = pathlib.Path(folder) / f'{f}_{tag}.sif'
+    if touch:
+        f.touch()
+
+    return f
 
 
 @pytest.mark.parametrize('name', TOOLS_ALL)
@@ -85,10 +100,13 @@ def test_tool_unknown(mock_tool):
 @pytest.mark.parametrize('name', TOOLS_ALL)
 def test_user(mock_tool, monkeypatch, name):
     """Test which tools specify user and group."""
+    tag = '0.0'
     tool, log = mock_tool(name)
-    sif = tool.parent / 'image.sif'
-    sif.touch()
-    monkeypatch.setenv('BABYSEG_SIF', str(sif))
+
+    # Point to existing SIF file.
+    sif = construct_sif_file(tool.parent, tag, touch=True)
+    monkeypatch.setenv('BABYSEG_TAG', tag)
+    monkeypatch.setenv('BABYSEG_SIF', str(sif.parent))
     assert not run_wrapper().returncode
 
     # Expect UID, GID setting only for Docker.
@@ -113,8 +131,30 @@ def test_docker_run(mock_tool, monkeypatch):
 
 
 @pytest.mark.parametrize('name', TOOLS_SIF)
-def test_sif_absent(mock_tool, monkeypatch, name):
-    """Test behavior when default SIF file is missing."""
+def test_sif_directory_error(mock_tool, monkeypatch, name):
+    """Test if not pointing `BABYSEG_SIF` to a directory raises an error."""
+    tool, log = mock_tool(name)
+
+    # Expect failure on an existing file
+    d = log
+    monkeypatch.setenv('BABYSEG_SIF', str(d))
+    assert run_wrapper().returncode != 0
+
+    # Expect failure on a directory that does not exist.
+    d = tool.parent / 'a' / 'b'
+    monkeypatch.setenv('BABYSEG_SIF', str(d))
+    assert run_wrapper().returncode != 0
+
+    # Expect success on an existing directory.
+    d = tool.parent / 'existing'
+    d.mkdir()
+    monkeypatch.setenv('BABYSEG_SIF', str(d))
+    assert run_wrapper().returncode == 0
+
+
+@pytest.mark.parametrize('name', TOOLS_SIF)
+def test_sif_file_absent(mock_tool, monkeypatch, name):
+    """Test behavior when the SIF file is missing and `BABYSEG_SIF` unset."""
     tag = 'absent'
     tool, log = mock_tool(name)
     monkeypatch.setenv('BABYSEG_TAG', tag)
@@ -124,36 +164,35 @@ def test_sif_absent(mock_tool, monkeypatch, name):
     # Expect default SIF path alongside script.
     image = os.getenv('BABYSEG_DOCKER_NAME')
     d = pathlib.Path(p.args).absolute().parent
-    sif = d / (pathlib.Path(image).name + f'_{tag}.sif')
-    url = f'docker://{image}:{tag}'
+    sif = construct_sif_file(d, tag, touch=False)
+    hub = f'docker://{image}:{tag}'
 
     # Expect two calls; `pull` first.
     out = log.read_text().splitlines()
     assert len(out) == 2
-    assert out[0].split() == [str(tool), 'pull', str(sif), url]
+    assert out[0].split() == [str(tool), 'pull', str(sif), hub]
 
 
 @pytest.mark.parametrize('name', TOOLS_SIF)
-def test_sif_present(mock_tool, monkeypatch, name):
-    """Test behavior when a user-provided SIF file exists."""
+def test_sif_file_present(mock_tool, monkeypatch, name):
+    """Test behavior when the SIF file exists."""
+    tag = '9.0'
     tool, log = mock_tool(name)
-    sif = tool.parent / 'present.sif'
-    sif.touch()
-    monkeypatch.setenv('BABYSEG_SIF', str(sif))
+    sif = construct_sif_file(tool.parent, tag, touch=True)
+    monkeypatch.setenv('BABYSEG_TAG', tag)
+    monkeypatch.setenv('BABYSEG_SIF', str(sif.parent))
     p = run_wrapper()
     assert not p.returncode
 
-    # Expect `run` only.
+    # Expect `run` call  only.
     assert len(log.read_text().splitlines()) == 1
 
-    # Expect No GPU flag `--nv` with regular image name.
     run = log.read_text().split()
-    assert run[0] == str(tool)
+    assert run[:2] == [str(tool), 'run']
     assert '--pwd' in run
     assert '/mnt' in run
     assert f'{os.getcwd()}:/mnt' in run
     assert run[-1] == str(sif)
-    assert '--nv' not in run
 
 
 @pytest.mark.parametrize('name', TOOLS_ALL)
@@ -169,22 +208,24 @@ def test_bind_mount(mock_tool, monkeypatch, name):
 
 @pytest.mark.parametrize('name', TOOLS_SIF)
 def test_gpu(mock_tool, monkeypatch, name):
-    """Test enabling GPU support via SIF image file name."""
+    """Test enabling GPU support via image tag."""
     tool, log = mock_tool(name)
+    monkeypatch.setenv('BABYSEG_SIF', str(tool.parent))
 
-    # Expect GPU support for `-cu` or `-gpu` in file name.
-    for tag in ('1.2.3-cu130', '0.0-gpu'):
-        # Mock image.
-        sif = tool.parent / f'image_{tag}.sif'
-        sif.touch()
-
-        monkeypatch.setenv('BABYSEG_SIF', str(sif))
+    # Expect GPU enabled when `-cu` in tag.
+    for tag in ('1.2.3-cu130', '9.9'):
+        log.write_text('')
+        sif = construct_sif_file(os.getenv('BABYSEG_SIF'), tag, touch=True)
+        monkeypatch.setenv('BABYSEG_TAG', tag)
         assert not run_wrapper().returncode
-        assert '--nv' in log.read_text().split()
+
+        is_gpu_image = '-cu' in tag
+        is_gpu_enabled = '--nv' in log.read_text().split()
+        assert is_gpu_image == is_gpu_enabled
 
 
 @pytest.mark.parametrize('name', TOOLS_SIF)
-def test_error_code_pull(mock_tool, monkeypatch, name):
+def test_error_code_on_pull(mock_tool, monkeypatch, name):
     """Test if failure on SIF image `pull` returns the correct code."""
     code = 7
     mock_tool(name, code=code)
@@ -193,7 +234,7 @@ def test_error_code_pull(mock_tool, monkeypatch, name):
 
 
 @pytest.mark.parametrize('name', TOOLS_ALL - TOOLS_SIF)
-def test_error_code_run(mock_tool, monkeypatch, name):
+def test_error_code_on_run(mock_tool, monkeypatch, name):
     """Test if failure on `run` returns the correct code."""
     code = 13
     mock_tool(name, code=code)

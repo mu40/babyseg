@@ -18,14 +18,14 @@ import sys
 
 
 # Settings. Adjust the values below to control the container version, local
-# image path, and preferred container tools. You can override them by setting
+# image folder, and preferred container tools. You can override them by setting
 # environment variables `BABYSEG_TAG`, `BABYSEG_SIF`, and `BABYSEG_TOOL`.
 
-# Container version tag.
+# Container version tag. Must exist.
 tag = '0.0'
 
-# Local image path for Apptainer, Singularity.
-sif_file = ''
+# Local directory for storing Apptainer, Singularity images.
+sif = pathlib.Path(__file__).parent
 
 # Container tool preference. Checked left to right.
 tools = ('docker', 'apptainer', 'singularity', 'podman')
@@ -40,10 +40,10 @@ def env(key, default):
         return value
     return default
 
+host = env('BABYSEG_MNT', os.getcwd())
 tag = env('BABYSEG_TAG', tag)
-f = pathlib.Path(__file__).parent / f'babyseg_{tag}.sif'
-sif_file = env('BABYSEG_SIF', sif_file if sif_file else f)
-sif_file = pathlib.Path(sif_file)
+sif = env('BABYSEG_SIF', sif)
+sif = pathlib.Path(sif) / f'babyseg_{tag}.sif'
 
 tools = env('BABYSEG_TOOL', tools)
 if isinstance(tools, str):
@@ -72,7 +72,6 @@ else:
 # Bind path and image URL. Mount BABYSEG_MNT as /mnt inside the container,
 # which we made the working directory when building the image. Docker and
 # Podman require absolute paths.
-host = os.getenv('BABYSEG_MNT', os.getcwd())
 host = pathlib.Path(host).absolute()
 print(f'Will bind /mnt in container to BABYSEG_MNT="{host}"')
 
@@ -83,35 +82,36 @@ if tool.name != 'docker':
 
 # Run Docker containers with the UID and GID of the host user. This user will
 # own bind mounts inside the container, preventing output files owned by root.
-# Root inside rootless Podman containers maps to the non-root host user, which
-# is what we want. If we set UID and GID inside the container to the non-root
-# host user as for Docker, then these would get remapped according to
-# /etc/subuid outside, causing problems with read and write permissions.
+# Root inside rootless Podman containers maps to the host user, which is what
+# we want. If we set UID and GID inside the container to the non-root host user
+# as for Docker, then these would get remapped according to /etc/subuid
+# outside, causing permission problems. Pretty-print help text with `-t`.
 if tool.name in ('docker', 'podman'):
-    arg = ('run', '--rm', '-v', f'{host}:/mnt')
-
-    # Pretty-print help text.
+    arg = ('run', '--rm', '-v', f'{host}:/mnt', image)
     if sys.stdout.isatty():
-        arg = (*arg, '-t')
+        arg = (*arg[:-1], '-t', arg[-1])
     if 'docker' in tool.name:
-        arg = (*arg, '-u', f'{os.getuid()}:{os.getgid()}')
-
-    arg = (*arg, image)
+        arg = (*arg[:-1], '-u', f'{os.getuid()}:{os.getgid()}', arg[-1])
 
 
 # For Apptainer or Singularity, the users inside and outside the container are
 # the same. The working directory is also the same, unless we set it.
 elif tool.name in ('apptainer', 'singularity'):
-    arg = ('run', '--pwd', '/mnt', '-e', '-B', f'{host}:/mnt', sif_file)
-    if any(f in sif_file.name for f in ('-cu', '-gpu')):
-        arg = (arg[0], '--nv', *arg[1:])
+    if not sif.parent.is_dir():
+        print(f'Did not find a directory at "{sif.parent}"', file=sys.stderr)
+        exit(1)
 
-    if not sif_file.exists():
-        print(f'Cannot find image "{sif_file}", pulling it', file=sys.stderr)
-        p = subprocess.run((tool, 'pull', sif_file, image))
+    if not sif.exists():
+        call = (tool, 'pull', sif, image)
+        print(f'Cannot find image "{sif}", pulling it')
+        print('Command:', *call)
+        p = subprocess.run(call)
         if p.returncode:
             exit(p.returncode)
 
+    arg = ('run', '--pwd', '/mnt', '-e', '-B', f'{host}:/mnt', sif)
+    if '-cu' in sif.name:
+        arg = (arg[0], '--nv', *arg[1:])
 
 else:
     print(f'Cannot set up unknown container tool "{tool}"', file=sys.stderr)

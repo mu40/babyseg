@@ -3,35 +3,25 @@
 import babyseg
 import json
 import katy
+import pathlib
 import pytest
 
 
 def test_load_default():
     """Test loading configuration defaults."""
-    y = katy.io.load(babyseg.config.DEFAULT)
+    y = katy.io.load(babyseg.config.DEFAULTS)
     assert babyseg.config.load() == y
 
 
-def test_load_default_change(tmp_path):
-    """Test changing the default configuration path."""
-    # Paths.
-    old = babyseg.config.DEFAULT
-    new = tmp_path / 'new.json'
+def test_load_default_change(monkeypatch, tmp_path):
+    """Test reading defaults from a changed path."""
+    path = tmp_path / 'new.json'
+    data = {'a': 'b'}
+    katy.io.save(data, path)
 
-    # Data.
-    data = katy.io.load(old)
-    katy.io.save(data, new)
-
-    # Read from function argument.
-    assert babyseg.config.load(defaults=new) == data
-
-    # Read from changed module attribute.
-    try:
-        babyseg.config.DEFAULT = new
-        assert babyseg.config.load() == data
-
-    finally:
-        babyseg.config.DEFAULT = old
+    # Expect defaults to be data above.
+    monkeypatch.setattr('babyseg.config.DEFAULTS', path)
+    assert babyseg.config.load() == data
 
 
 def test_load_files_merge(tmp_path):
@@ -64,6 +54,41 @@ def test_load_files_replace(tmp_path):
     assert c['a'] == data_2['a']
 
 
+def test_qualify_path_type():
+    """Test the return type when qualifying a path."""
+    for path in (pathlib.Path('x'), pathlib.Path('/usr'), 'a/b', '/a/b'):
+        out = babyseg.config.qualify_path(path)
+        assert isinstance(out, pathlib.Path)
+
+
+def test_qualify_path_absolute():
+    """Test if qualifying an absolute path doesn't change it."""
+    f = pathlib.Path('/one/two/three')
+    assert babyseg.config.qualify_path(f) == f
+
+
+def test_qualify_path_relative_existing(monkeypatch, tmp_path):
+    """Test if qualifying an existing relative path doesn't change it."""
+    monkeypatch.chdir(tmp_path.parent)
+    f = pathlib.Path(tmp_path.name)
+    assert babyseg.config.qualify_path(f) == f
+
+
+def test_qualify_path_relative_missing(monkeypatch, tmp_path):
+    """Test if qualifying a nonexistent relative path."""
+    f = pathlib.Path('some_file')
+    monkeypatch.chdir(tmp_path)
+
+    # Expect no change if `BABYSEG_HOME` unset.
+    monkeypatch.delenv('BABYSEG_HOME', raising=False)
+    assert babyseg.config.qualify_path(f) == f
+
+    # Expect prefix `BABYSEG_HOME` if set.
+    home = '/some/home'
+    monkeypatch.setenv('BABYSEG_HOME', home)
+    assert babyseg.config.qualify_path(f) == home / f
+
+
 def test_load_invalid(tmp_path):
     """Test if loading non-dictionary settings raise an error."""
     f = tmp_path / 'string.json'
@@ -79,7 +104,7 @@ def test_build_args():
 
 
 def test_build_kwargs():
-    """Test building a partial function with keyword arguments.."""
+    """Test building a partial function with keyword arguments."""
     f = babyseg.config.build(lambda **kwargs: kwargs, one=1, two=2)
     assert f() == dict(one=1, two=2)
 

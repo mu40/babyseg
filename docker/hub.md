@@ -7,7 +7,7 @@ The tool can integrate information from multiple image volumes of variable size,
 ## Requirements
 
 Segmenting a single image can use about 24 GB of memory on the CPU or under 2 GB of memory with a 24-GB GPU, depending on image size.
-We provide a [wrapper script](https://w3id.org/babyseg/get) that facilitates setup and use of BabySeg containers.
+We provide a [wrapper script](https://get.babyseg.io) that facilitates setup and use of BabySeg containers.
 It requires **Python 3** and supports any of the container platforms: **Docker**, **Podman**, **Apptainer**, or **Singularity**.
 
 
@@ -27,7 +27,7 @@ export APPTAINER_TMPDIR="$d"
 Download and run the script, which auto-detects container tools in your `PATH`:
 
 ```
-curl -Lo babyseg https://w3id.org/babyseg/get
+curl -Lo babyseg get.babyseg.io
 chmod +x babyseg
 ./babyseg
 ```
@@ -49,20 +49,19 @@ To use Apptainer, even if Docker is also installed:
 BABYSEG_SIF=apptainer ./babyseg
 ```
 
-| Variable       | Purpose                                             | Default |
+| Variable       | Purpose                                             | Default                                                       |
 |:---------------|:----------------------------------------------------|:--------------------------------------------------------------|
+| `BABYSEG_MNT`  | Define the working directory inside the container   | Your current working directory                                |
 | `BABYSEG_SIF`  | Specify the Apptainer or Singularity image path     | File `babyseg_${BABYSEG_TAG}.sif` in the script's directory   |
 | `BABYSEG_TAG`  | Select a newer or GPU image tag                     | Latest CPU-only tag                                           |
 | `BABYSEG_TOOL` | Find a container tool in `PATH` or by absolute path | First found of `docker`, `apptainer`, `singularity`, `podman` |
 
-Additionally, `SUBJECTS_DIR` controls the working directory in the container as follows.
-
 
 ## Path resolution
 
-For convenience, BabySeg temporarily mounts the host directory set in environment variable `SUBJECTS_DIR` to `/mnt` inside the container, which serves as its working directory.
-If unset, `SUBJECTS_DIR` defaults to your current directory.
-This enables BabySeg to access relative paths under your working directory without your setting `SUBJECTS_DIR`.
+For convenience, BabySeg temporarily mounts the host directory set in environment variable `BABYSEG_MNT` to `/mnt` inside the container, which serves as its working directory.
+If you do not set `BABYSEG_MNT`, it defaults to your current directory.
+This enables BabySeg to access relative paths under your working directory without requiring you to set `BABYSEG_MNT`.
 
 
 ## Usage examples
@@ -70,7 +69,7 @@ This enables BabySeg to access relative paths under your working directory witho
 Change into or set BabySeg's working directory to `~/data`:
 
 ```sh
-export SUBJECTS_DIR=~/data
+export BABYSEG_MNT=~/data
 ```
 
 Segment image `~/data/in.nii.gz`, saving the label map as `~/data/out.nii.gz`:

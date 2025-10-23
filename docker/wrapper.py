@@ -2,10 +2,10 @@
 """Ease setup and use of BabySeg containers.
 
 Pulls a container from Docker Hub and mounts the host directory set by
-environment variable `SUBJECTS_DIR` to `/mnt` in the container, which serves as
-its working directory. If unset, `SUBJECTS_DIR` defaults to the current
+environment variable `BABYSEG_MNT` to `/mnt` in the container, which serves as
+its working directory. If unset, `BABYSEG_MNT` defaults to the current
 directory. Thus, BabySeg can access relative paths under it without setting
-`SUBJECTS_DIR` explicitly.
+`BABYSEG_MNT` explicitly.
 
 """
 
@@ -69,12 +69,12 @@ else:
     exit(1)
 
 
-# Bind path and image URL. Mount SUBJECTS_DIR as /mnt inside the container,
+# Bind path and image URL. Mount BABYSEG_MNT as /mnt inside the container,
 # which we made the working directory when building the image. Docker and
 # Podman require absolute paths.
-host = os.getenv('SUBJECTS_DIR', os.getcwd())
+host = os.getenv('BABYSEG_MNT', os.getcwd())
 host = pathlib.Path(host).absolute()
-print(f'Will bind /mnt in container to SUBJECTS_DIR="{host}"')
+print(f'Will bind /mnt in container to BABYSEG_MNT="{host}"')
 
 image = f'freesurfer/babyseg:{tag}'
 if tool.name != 'docker':

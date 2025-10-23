@@ -44,6 +44,11 @@ def run_wrapper():
     return subprocess.run('docker/wrapper.py')
 
 
+def test_environment(monkeypatch):
+    """Test the test environment."""
+    assert os.getenv('BABYSEG_DOCKER_NAME') is not None
+
+
 @pytest.mark.parametrize('name', TOOLS_ALL)
 def test_tool_auto(mock_tool, name):
     """Test auto-selecting tools from `PATH`."""
@@ -156,7 +161,7 @@ def test_bind_mount(mock_tool, monkeypatch, name):
     """Test explicit bind mount of `/mnt` inside container."""
     d = '/a/b/c'
     _, log = mock_tool(name)
-    monkeypatch.setenv('SUBJECTS_DIR', d)
+    monkeypatch.setenv('BABYSEG_MNT', d)
 
     assert not run_wrapper().returncode
     assert f'{d}:/mnt' in log.read_text().split()

@@ -42,9 +42,9 @@ def main(argv=None):
         description='''
             BabySeg is a tool for brain segmentation across the first years of
             life, without preprocessing. It can integrate information from
-            multiple image volumes of variable size, resolution, and contrast
-            in any order, provided that (1) their header geometries are
-            correct, and (2) they are properly aligned in world space.
+            multiple NIfTI image volumes of variable size, resolution, and
+            contrast in any order, provided that (1) their header geometries
+            are correct, and (2) they are properly aligned in world space.
         ''',
     )
 

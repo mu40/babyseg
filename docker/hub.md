@@ -1,7 +1,7 @@
 # BabySeg
 
 BabySeg is a brain segmentation tool for infants and young children, developed to delineate anatomical structures in MRI without preprocessing.
-The tool can integrate information from multiple image volumes of variable size, resolution, and contrast in any order, provided that (1) their header geometries are correct, and (2) they are properly aligned in world space.
+The tool can integrate information from multiple **NIfTI image** volumes of variable size, resolution, and contrast in any order, provided that (1) their **header geometries** are correct, and (2) they are **properly aligned** in world space.
 
 
 ## Requirements
@@ -50,12 +50,12 @@ To use Apptainer, even if Docker is also installed:
 BABYSEG_TOOL=apptainer ./babyseg
 ```
 
-| Variable       | Purpose                                                | Default                                                       |
-|:---------------|:-------------------------------------------------------|:--------------------------------------------------------------|
-| `BABYSEG_MNT`  | Define the working directory inside the container      | Your current working directory                                |
-| `BABYSEG_SIF`  | Control where to store Apptainer or Singularity images | The directory containing the BabySeg script                   |
-| `BABYSEG_TAG`  | Select a newer or GPU image tag                        | Latest CPU-only tag                                           |
-| `BABYSEG_TOOL` | Find a container tool in `PATH` or by absolute path    | First found of `docker`, `apptainer`, `singularity`, `podman` |
+| Variable       | Purpose                                                                      | Default                                                       |
+|:---------------|:-----------------------------------------------------------------------------|:--------------------------------------------------------------|
+| `BABYSEG_MNT`  | Define the working directory inside the container                            | Your current working directory                                |
+| `BABYSEG_SIF`  | Control where the tool stores and looks for  Apptainer or Singularity images | The directory containing the BabySeg script                   |
+| `BABYSEG_TAG`  | Select a newer or GPU image tag                                              | Latest CPU-only tag                                           |
+| `BABYSEG_TOOL` | Find a container tool by name or by absolute path                            | First found of `docker`, `apptainer`, `singularity`, `podman` |
 
 
 ## Path resolution

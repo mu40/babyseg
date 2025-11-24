@@ -38,7 +38,7 @@ def main(argv=None):
     p = argparse.ArgumentParser(
         prog='babyseg',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        epilog='Website: https://w3id.org/babyseg',
+        epilog='Website: https://babyseg.io',
         description='''
             BabySeg is a tool for brain segmentation across the first years of
             life, without preprocessing. It can integrate information from

@@ -13,6 +13,34 @@ import sys
 logger = logging.getLogger(__name__)
 
 
+def nifti(path):
+    """Validate extension of a NIfTI path.
+
+    Parameters
+    ----------
+    path : str or os.PathLike
+        Path to NIfTI file.
+
+    Returns
+    -------
+    pathlib.Path
+        Path.
+
+    Raises
+    ------
+    argparse.ArgumentTypeError
+        If the path does not end with '.nii' or '.nii.gz'.
+
+    """
+    path = pathlib.Path(path)
+    if path.name.lower().endswith(('.nii', '.nii.gz')):
+       return path
+
+    raise argparse.ArgumentTypeError(
+        f'"{path}" does not end with .nii or .nii.gz'
+    )
+
+
 def main(argv=None):
     """Entry point for command-line execution.
 
@@ -49,13 +77,13 @@ def main(argv=None):
     )
 
     # ruff: noqa: E501
-    p.add_argument('images', metavar='image', nargs='+', help='input images')
+    p.add_argument('images', metavar='image', type=nifti, nargs='+', help='NIfTI input images')
     p.add_argument('-c', dest='config', default=d['c'], help='model JSON file')
     p.add_argument('-k', dest='checkpoint', default=d['k'], help='model weights')
     p.add_argument('-g', dest='gpu', default=d['g'], action='store_true', help='enable GPU acceleration')
-    p.add_argument('-o', dest='out_seg', help='output label map')
-    p.add_argument('-p', dest='out_prob', help='output probability maps')
-    p.add_argument('-l', dest='out_lead', help='output conformed lead image')
+    p.add_argument('-o', dest='out_seg', type=nifti, help='NIfTI output label map')
+    p.add_argument('-p', dest='out_prob', type=nifti, help='NIfTI output probability maps')
+    p.add_argument('-l', dest='out_lead', type=nifti, help='NIfTI output conformed lead image')
     p.add_argument('-j', dest='threads', default=d['j'], type=int, help='CPU threads (default: 1/core)')
     p.add_argument('-v', dest='verbose', default=d['v'], action='count', help='repeat to increase verbosity')
     p.add_argument('-V', version=babyseg.__version__, action='version', help='print version and exit')

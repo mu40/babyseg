@@ -60,3 +60,27 @@ def test_image_missing(setup_env, capteesys):
     f = capteesys.readouterr()
     assert 'required: image' in f.err
     assert e.value.code != 0
+
+
+@pytest.mark.parametrize('flag', ('-o', '-l', '-p'))
+def test_mgz_output(setup_env, capteesys, flag):
+    """Test if specifying non-NIfTI outputs raises an error."""
+    out = 'out.mgz'
+    with pytest.raises(SystemExit) as e:
+        docker.entrypoint.main(argv=['in.nii', flag, out])
+
+    f = capteesys.readouterr()
+    assert flag in f.err
+    assert out in f.err
+    assert e.value.code != 0
+
+
+def test_mgz_input(setup_env, capteesys):
+    """Test if specifying non-NIfTI inputs raises an error."""
+    inp = 'in.mgz'
+    with pytest.raises(SystemExit) as e:
+        docker.entrypoint.main(argv=['-o', 'out.nii', inp])
+
+    f = capteesys.readouterr()
+    assert inp in f.err
+    assert e.value.code != 0

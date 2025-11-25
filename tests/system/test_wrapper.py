@@ -215,7 +215,7 @@ def test_gpu(mock_tool, monkeypatch, name):
     # Expect GPU enabled when `-cu` in tag.
     for tag in ('1.2.3-cu130', '9.9'):
         log.write_text('')
-        sif = construct_sif_file(os.getenv('BABYSEG_SIF'), tag, touch=True)
+        construct_sif_file(os.getenv('BABYSEG_SIF'), tag, touch=True)
         monkeypatch.setenv('BABYSEG_TAG', tag)
         assert not run_wrapper().returncode
 

@@ -1,4 +1,4 @@
-"""Tests for container entry point."""
+"""Tests for entry point options and error handling."""
 
 import babyseg
 import docker.entrypoint

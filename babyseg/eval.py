@@ -129,6 +129,7 @@ def segment(
     images = map(vx.load_volume, images[1:])
     images = (i.to(device).float().resample_like(conf) for i in images)
     images = vx.volume.stack(conf, *images).tensor.unsqueeze(0)
+    images[images.isnan()] = 0
 
     # Inference.
     logger.info('running model on tensor of %s', images.shape)

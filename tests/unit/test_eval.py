@@ -124,6 +124,18 @@ def test_segment_output_labels(config, inputs, tmp_path):
     assert out.shape == size
 
 
+def test_segment_nan(config, inputs, tmp_path):
+    """Test if NaN inputs will propagate to the probability map."""
+    x = vx.Volume(torch.ones(1, 2, 2, 2))
+    x[0, 0, 0, 0] = torch.nan
+    images = 'in.nii'
+    inputs[images] = x
+    f = tmp_path / 'out.nii.gz'
+
+    babyseg.eval.segment(config, images, out_prob=f)
+    assert not vx._load_volume(f).isnan().any()
+
+
 def test_segment_multiple_inputs(config, inputs, tmp_path):
     """Test if segmenting multiple inputs yields one output label map."""
     inputs['a.nii'] = vx.Volume(torch.ones(1, 2, 2, 2))

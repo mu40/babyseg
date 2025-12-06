@@ -85,6 +85,11 @@ def segment(
     threads : int, optional
         Number of intraop threads on CPU.
 
+    Raises
+    ------
+    ValueError
+        If called without at least one output.
+
     """
     # Inputs.
     if not isinstance(config, dict):
@@ -95,8 +100,7 @@ def segment(
 
     # Outputs.
     if not any((out_seg, out_prob, out_lead)):
-        logger.error('received no output file paths')
-        exit(1)
+        raise ValueError('received no output file paths')
 
     # Model.
     if threads is not None:

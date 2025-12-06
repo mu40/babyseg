@@ -2,7 +2,6 @@
 
 import babyseg
 import katy
-import logging
 import pytest
 import torch
 import voxel as vx
@@ -70,14 +69,12 @@ def inputs(monkeypatch):
     return inputs
 
 
-def test_segment_without_outputs(caplog):
+def test_segment_without_outputs():
     """Test if segmenting without specifying outputs raises an error."""
-    caplog.set_level(logging.ERROR)
-    with pytest.raises(SystemExit) as e:
+    with pytest.raises(ValueError) as e:
         babyseg.eval.segment(config={}, images=[])
 
-    assert 'output' in caplog.text
-    assert e.value.code != 0
+    assert 'output' in str(e.value)
 
 
 def test_segment_eval_mode(monkeypatch):

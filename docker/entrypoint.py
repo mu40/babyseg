@@ -54,7 +54,7 @@ def main(argv=None):
     home = os.getenv('BABYSEG_HOME')
     if not home:
         print('ERROR: no environment variable BABYSEG_HOME', file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     # Defaults.
     home = pathlib.Path(home)
@@ -95,7 +95,7 @@ def main(argv=None):
     # Early exit.
     if len(argv) == 0:
         p.print_usage()
-        exit(0)
+        sys.exit(0)
 
     # Device.
     arg = vars(p.parse_args(argv))

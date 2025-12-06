@@ -71,7 +71,7 @@ def test_tool_auto(mock_tool, name):
 
     # Expect no log initially.
     assert not log.read_text()
-    assert not run_wrapper().returncode
+    assert run_wrapper().returncode == 0
     assert log.read_text().startswith(str(tool))
 
 
@@ -81,7 +81,7 @@ def test_tool_absolute(mock_tool, monkeypatch, name):
     tool, log = mock_tool(name, set_path=False, set_tool=False)
     monkeypatch.setenv('BABYSEG_TOOL', str(tool))
 
-    assert not run_wrapper().returncode
+    assert run_wrapper().returncode == 0
     assert log.read_text().startswith(str(tool))
 
 
@@ -107,7 +107,7 @@ def test_user(mock_tool, monkeypatch, name):
     sif = construct_sif_file(tool.parent, tag, touch=True)
     monkeypatch.setenv('BABYSEG_TAG', tag)
     monkeypatch.setenv('BABYSEG_SIF', str(sif.parent))
-    assert not run_wrapper().returncode
+    assert run_wrapper().returncode == 0
 
     # Expect UID, GID setting only for Docker.
     is_docker = name == 'docker'
@@ -120,7 +120,7 @@ def test_docker_run(mock_tool, monkeypatch):
     tag = '0.0'
     tool, log = mock_tool('docker')
     monkeypatch.setenv('BABYSEG_TAG', tag)
-    assert not run_wrapper().returncode
+    assert run_wrapper().returncode == 0
 
     out = log.read_text().split()
     assert out[0] == str(tool)
@@ -159,7 +159,7 @@ def test_sif_file_absent(mock_tool, monkeypatch, name):
     tool, log = mock_tool(name)
     monkeypatch.setenv('BABYSEG_TAG', tag)
     p = run_wrapper()
-    assert not p.returncode
+    assert p.returncode == 0
 
     # Expect default SIF path alongside script.
     image = os.getenv('BABYSEG_DOCKER_NAME')
@@ -182,7 +182,7 @@ def test_sif_file_present(mock_tool, monkeypatch, name):
     monkeypatch.setenv('BABYSEG_TAG', tag)
     monkeypatch.setenv('BABYSEG_SIF', str(sif.parent))
     p = run_wrapper()
-    assert not p.returncode
+    assert p.returncode == 0
 
     # Expect `run` call  only.
     assert len(log.read_text().splitlines()) == 1
@@ -202,7 +202,7 @@ def test_bind_mount(mock_tool, monkeypatch, name):
     _, log = mock_tool(name)
     monkeypatch.setenv('BABYSEG_MNT', d)
 
-    assert not run_wrapper().returncode
+    assert run_wrapper().returncode == 0
     assert f'{d}:/mnt' in log.read_text().split()
 
 
@@ -217,7 +217,7 @@ def test_gpu(mock_tool, monkeypatch, name):
         log.write_text('')
         construct_sif_file(os.getenv('BABYSEG_SIF'), tag, touch=True)
         monkeypatch.setenv('BABYSEG_TAG', tag)
-        assert not run_wrapper().returncode
+        assert run_wrapper().returncode == 0
 
         is_gpu_image = '-cu' in tag
         is_gpu_enabled = '--nv' in log.read_text().split()

@@ -335,7 +335,7 @@ def git_status(path, *pathspec, timeout=10):
     )
 
     # Print error, which `CalledProcessError` from `check=True` does not.
-    if p.returncode:
+    if p.returncode != 0:
         raise ValueError(p.stderr)
 
     return p.stdout.strip()

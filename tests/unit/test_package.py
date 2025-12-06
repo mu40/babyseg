@@ -33,7 +33,7 @@ def test_pytorch_free_import():
         '    exit(1)',
     ))
     p = subprocess.run((sys.executable, '-c', code))
-    assert not p.returncode, 'lazy import pulls in PyTorch'
+    assert p.returncode == 0, 'lazy import pulls in PyTorch'
 
 
 @pytest.mark.parametrize('module', ['config', 'data'])
@@ -48,4 +48,4 @@ def test_pytorch_free_submodule(module):
         '    exit(1)',
     ))
     p = subprocess.run((sys.executable, '-c', code))
-    assert not p.returncode, 'PyTorch among imported modules'
+    assert p.returncode == 0, 'PyTorch among imported modules'

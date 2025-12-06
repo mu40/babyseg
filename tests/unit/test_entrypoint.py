@@ -3,6 +3,8 @@
 import babyseg
 import docker.entrypoint
 import pytest
+import torch
+import unittest
 
 
 @pytest.fixture()
@@ -92,3 +94,15 @@ def test_mgz_input(babyseg_home, capteesys):
     f = capteesys.readouterr()
     assert inp in f.err
     assert e.value.code != 0
+
+
+def test_threads(babyseg_home, monkeypatch):
+    """Test setting the number of intraop threads on the CPU."""
+    mock = unittest.mock.Mock(side_effect=RuntimeError('END'))
+    monkeypatch.setattr(torch, 'set_num_threads', mock)
+
+    threads = 7
+    with pytest.raises(RuntimeError, match='END'):
+        docker.entrypoint.main(argv=['-j', f'{threads}', 'in.nii'])
+
+    mock.assert_called_once_with(threads)

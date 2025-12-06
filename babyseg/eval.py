@@ -62,7 +62,6 @@ def segment(
     out_prob=None,
     out_lead=None,
     device=None,
-    threads=None,
 ):
     """Segment an image using a trained model.
 
@@ -82,8 +81,6 @@ def segment(
         Conformed lead image output.
     device : torch.device, optional
         Device used for inference.
-    threads : int, optional
-        Number of intraop threads on CPU.
 
     Raises
     ------
@@ -101,10 +98,6 @@ def segment(
     # Outputs.
     if not any((out_seg, out_prob, out_lead)):
         raise ValueError('received no output file paths')
-
-    # Model.
-    if threads is not None:
-        torch.set_num_threads(threads)
 
     model = bs.config.load_model(config, init=checkpoint, device=device)
     model.eval()

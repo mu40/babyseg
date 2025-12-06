@@ -84,7 +84,7 @@ def main(argv=None):
     p.add_argument('-o', dest='out_seg', type=nifti, help='NIfTI output label map')
     p.add_argument('-p', dest='out_prob', type=nifti, help='NIfTI output probability maps')
     p.add_argument('-l', dest='out_lead', type=nifti, help='NIfTI output conformed lead image')
-    p.add_argument('-j', dest='threads', default=d['j'], type=int, help='CPU threads (default: 1/core)')
+    p.add_argument('-j', dest='threads', default=d['j'], type=int, help='CPU threads (default: auto)')
     p.add_argument('-v', dest='verbose', default=d['v'], action='count', help='repeat to increase verbosity')
     p.add_argument('-V', version=babyseg.__version__, action='version', help='print version and exit')
     # ruff: enable: E501
@@ -101,6 +101,10 @@ def main(argv=None):
     arg = vars(p.parse_args(argv))
     if arg.pop('gpu', False):
         arg['device'] = 'cuda'
+
+    if 'threads' in arg:
+        import torch
+        torch.set_num_threads(arg.pop('threads'))
 
     # Verbosity.
     v = {0: 'WARNING', 1: 'INFO'}.get(arg.pop('verbose', 0), 'DEBUG')

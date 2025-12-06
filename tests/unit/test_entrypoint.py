@@ -5,10 +5,18 @@ import docker.entrypoint
 import pytest
 
 
-@pytest.fixture
-def setup_env(monkeypatch):
-    """Set BABYSEG_HOME environment variable for testing."""
-    monkeypatch.setenv('BABYSEG_HOME', '.')
+@pytest.fixture()
+def babyseg_home(monkeypatch, tmp_path):
+    """Set up minimal mock environment for testing."""
+    home = tmp_path
+    config = home / 'config'
+    checkpoints = home / 'checkpoints'
+    config.mkdir()
+    checkpoints.mkdir()
+    (config / 'babyseg.1.json').touch()
+    (checkpoints / 'babyseg.1.pt').touch()
+    monkeypatch.setenv('BABYSEG_HOME', str(home))
+    return home
 
 
 def test_home(monkeypatch, capteesys):
@@ -22,7 +30,7 @@ def test_home(monkeypatch, capteesys):
     assert e.value.code != 0
 
 
-def test_usage(setup_env, capteesys):
+def test_usage(babyseg_home, capteesys):
     """Test printing usage without arguments."""
     with pytest.raises(SystemExit) as e:
         docker.entrypoint.main(argv=[])
@@ -32,7 +40,7 @@ def test_usage(setup_env, capteesys):
     assert e.value.code == 0
 
 
-def test_help(setup_env, capteesys):
+def test_help(babyseg_home, capteesys):
     """Test printing the help text."""
     with pytest.raises(SystemExit) as e:
         docker.entrypoint.main(argv=['-h'])
@@ -42,7 +50,7 @@ def test_help(setup_env, capteesys):
     assert e.value.code == 0
 
 
-def test_version(setup_env, capteesys):
+def test_version(babyseg_home, capteesys):
     """Test printing the version number."""
     with pytest.raises(SystemExit) as e :
         docker.entrypoint.main(argv=['-V'])
@@ -52,7 +60,7 @@ def test_version(setup_env, capteesys):
     assert e.value.code == 0
 
 
-def test_image_missing(setup_env, capteesys):
+def test_image_missing(babyseg_home, capteesys):
     """Test if passing no input image raises an error."""
     with pytest.raises(SystemExit) as e:
         docker.entrypoint.main(argv=['-g'])
@@ -63,7 +71,7 @@ def test_image_missing(setup_env, capteesys):
 
 
 @pytest.mark.parametrize('flag', ('-o', '-l', '-p'))
-def test_mgz_output(setup_env, capteesys, flag):
+def test_mgz_output(babyseg_home, capteesys, flag):
     """Test if specifying non-NIfTI outputs raises an error."""
     out = 'out.mgz'
     with pytest.raises(SystemExit) as e:
@@ -75,7 +83,7 @@ def test_mgz_output(setup_env, capteesys, flag):
     assert e.value.code != 0
 
 
-def test_mgz_input(setup_env, capteesys):
+def test_mgz_input(babyseg_home, capteesys):
     """Test if specifying non-NIfTI inputs raises an error."""
     inp = 'in.mgz'
     with pytest.raises(SystemExit) as e:

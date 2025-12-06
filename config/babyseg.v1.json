@@ -22,7 +22,7 @@
     "model": {
         "name": "babyseg.nn.GroupNet",
         "kwargs": {
-            "dim": 3,
+            "ndim": 3,
             "inp": 1,
             "out": 22,
             "enc": [1, 64, 64, 64, 64, 64],

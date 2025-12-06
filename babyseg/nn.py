@@ -147,7 +147,7 @@ class GroupNet(nn.Module):
 
     def __init__(
         self,
-        dim=3,
+        ndim=3,
         inp=1,
         out=1,
         *,
@@ -163,8 +163,8 @@ class GroupNet(nn.Module):
 
         Parameters
         ----------
-        dim : int, optional
-            Number of spatial dimensions `N`.
+        ndim : int, optional
+            Dimensionality `N`.
         inp : int, optional
             Number of input channels.
         out : int, optional
@@ -186,13 +186,13 @@ class GroupNet(nn.Module):
 
         """
         super().__init__()
-        mode = {1: 'linear', 2: 'bilinear', 3: 'trilinear'}[dim]
+        mode = {1: 'linear', 2: 'bilinear', 3: 'trilinear'}[ndim]
         self.clip = clip
 
         # Blocks.
         conv = bs.config.build(
             conv,
-            dim,
+            ndim,
             kernel_size=3,
             padding='same',
             instance=False,
@@ -211,7 +211,7 @@ class GroupNet(nn.Module):
                 level.append(make_activation(act))
                 n_inp = n_out
             self.enc.append(nn.Sequential(*level))
-            self.down.append(GroupMaxPool(dim, kernel_size=2))
+            self.down.append(GroupMaxPool(ndim, kernel_size=2))
 
         # Decoder.
         self.dec = nn.ModuleList()

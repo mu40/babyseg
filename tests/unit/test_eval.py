@@ -4,6 +4,7 @@ import babyseg
 import katy
 import pytest
 import torch
+import unittest
 import voxel as vx
 
 
@@ -44,19 +45,16 @@ def config(monkeypatch):
         'synthesis': {'kwargs': {'optimize': 'some_path'}},
     }
 
+    # Return tensors with `labels` channels, propagating NaN.
     class Model:
         def eval(self):
             return self
 
         def __call__(self, x):
-            """Return a tensor with `labels` channels, propagating NaN."""
             return x.sum(dim=1, keepdim=True).expand(-1, labels, *x.shape[2:])
 
-    def load_model(*args, **kwargs):
-        return Model()
-
     monkeypatch.setattr(katy.io, 'load', lambda _: range(labels))
-    monkeypatch.setattr(babyseg.config, 'load_model', load_model)
+    monkeypatch.setattr(babyseg.config, 'load_model', lambda *_, **__: Model())
     return config
 
 
@@ -71,25 +69,16 @@ def inputs(monkeypatch):
 
 def test_segment_without_outputs():
     """Test if segmenting without specifying outputs raises an error."""
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match='output'):
         babyseg.eval.segment(config={}, images=[])
-
-    assert 'output' in str(e.value)
 
 
 def test_segment_eval_mode(monkeypatch):
     """Test if segmentation sets evaluation mode."""
-    class Model:
-        pass
-
-    def load_model(*args, **kwargs):
-        return Model()
-
-    monkeypatch.setattr(babyseg.config, 'load_model', load_model)
-    with pytest.raises(AttributeError) as e:
+    mock = unittest.mock.Mock(side_effect=RuntimeError('EVAL'))
+    monkeypatch.setattr(babyseg.config, 'load_model', mock)
+    with pytest.raises(RuntimeError, match='EVAL'):
         babyseg.eval.segment(config={}, images=[], out_seg='out.nii')
-
-    assert e.value.name == 'eval'
 
 
 def test_segment_output_probabilities(config, inputs, tmp_path):

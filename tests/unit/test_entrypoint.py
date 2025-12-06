@@ -29,7 +29,7 @@ def test_home(monkeypatch, capteesys):
 
     f = capteesys.readouterr()
     assert 'environment variable' in f.err
-    assert e.value.code != 0
+    assert e.value.code > 0
 
 
 def test_usage(babyseg_home, capteesys):
@@ -69,7 +69,7 @@ def test_image_missing(babyseg_home, capteesys):
 
     f = capteesys.readouterr()
     assert 'required: image' in f.err
-    assert e.value.code != 0
+    assert e.value.code > 0
 
 
 @pytest.mark.parametrize('flag', ('-o', '-l', '-p'))
@@ -82,7 +82,7 @@ def test_mgz_output(babyseg_home, capteesys, flag):
     f = capteesys.readouterr()
     assert flag in f.err
     assert out in f.err
-    assert e.value.code != 0
+    assert e.value.code > 0
 
 
 def test_mgz_input(babyseg_home, capteesys):
@@ -93,7 +93,7 @@ def test_mgz_input(babyseg_home, capteesys):
 
     f = capteesys.readouterr()
     assert inp in f.err
-    assert e.value.code != 0
+    assert e.value.code > 0
 
 
 def test_threads(babyseg_home, monkeypatch):

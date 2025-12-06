@@ -130,7 +130,7 @@ def segment(
 
     # Inference.
     logger.info('running model on tensor of %s', images.shape)
-    with torch.no_grad():
+    with torch.inference_mode():
         start = time.time()
         out = model(images).squeeze()
         logger.info('inference took %.2f seconds', time.time() - start)

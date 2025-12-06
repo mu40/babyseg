@@ -23,7 +23,6 @@
         "name": "babyseg.nn.GroupNet",
         "kwargs": {
             "ndim": 3,
-            "inp": 1,
             "out": 22,
             "enc": [1, 64, 64, 64, 64, 64],
             "dec": [64, 64, 64, 64, 64, 64],

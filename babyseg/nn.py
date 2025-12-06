@@ -148,7 +148,6 @@ class GroupNet(nn.Module):
     def __init__(
         self,
         ndim=3,
-        inp=1,
         out=1,
         *,
         enc=(24, 48, 96, 192, 384),
@@ -161,12 +160,13 @@ class GroupNet(nn.Module):
     ):
         """Initialize the model.
 
+        Instead of a channel dimension, this model takes tensors with a
+        flexible group dimension that can vary during training and inference.
+
         Parameters
         ----------
         ndim : int, optional
             Dimensionality `N`.
-        inp : int, optional
-            Number of input channels.
         out : int, optional
             Number of output channels.
         enc : sequence of int, optional
@@ -187,7 +187,9 @@ class GroupNet(nn.Module):
         """
         super().__init__()
         mode = {1: 'linear', 2: 'bilinear', 3: 'trilinear'}[ndim]
-        self.clip = clip
+        self.clip = torch.as_tensor(clip).ravel()
+        if len(self.clip) != 2:
+            raise ValueError(f'clip {clip} is not of length 2')
 
         # Blocks.
         conv = bs.config.build(
@@ -199,8 +201,8 @@ class GroupNet(nn.Module):
         )
         make_activation = kt.models.make_activation
 
-        # Encoder.
-        n_inp = inp
+        # Encoder. First group convolution has one channel.
+        n_inp = 1
         enc = list(enc)
         self.enc = nn.ModuleList()
         self.down = nn.ModuleList()
@@ -244,8 +246,8 @@ class GroupNet(nn.Module):
 
         Parameters
         ----------
-        x : (B, inp, ...) torch.Tensor
-            Input tensor.
+        x : (B, G, ...) torch.Tensor
+            Input tensor of variable group size `G`.
 
         Returns
         -------

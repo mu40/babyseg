@@ -163,6 +163,37 @@ def test_segment_output_labels(config, inputs, tmp_path):
     assert out.geometry.spacing.equal(x.geometry.spacing)
 
 
+def test_segment_output_argmax(config, inputs, monkeypatch, tmp_path):
+    """Verify that output label maps are the (remapped) probability argmax."""
+    # Ground-truth label map, probabilities, index-label mapping.
+    y = torch.tensor((
+        ((3, 2), (1, 0)),
+        ((3, 3), (1, 1)),
+    )).unsqueeze(0)
+    mapping = torch.arange(y.max() + 1).flip(-1)
+    p = katy.labels.one_hot(y[None], mapping)
+
+    # Dummy input and output path.
+    inputs['in.nii'] = vx.Volume(torch.ones_like(y))
+    images = tuple(inputs)
+    f = tmp_path / 'out.nii.gz'
+
+    # Mock model to return the probabilities. Disable reshaping, resampling,
+    # and reorienting based on configuration values.
+    model = unittest.mock.Mock(return_value=p)
+    load_model = unittest.mock.Mock(return_value=model)
+    monkeypatch.setattr(babyseg.config, 'load_model', load_model)
+    monkeypatch.setattr(katy.io, 'load', lambda _: mapping)
+    monkeypatch.setattr(vx.Volume, 'reshape', lambda x, _: x)
+    monkeypatch.setattr(vx.Volume, 'resample', lambda x, _: x)
+    monkeypatch.setattr(vx.Volume, 'reorient', lambda x, _: x)
+
+    # Process and compare results.
+    babyseg.eval.segment(config, images, out_seg=f)
+    out = vx._load_volume(f)
+    assert out.tensor.equal(y)
+
+
 def test_segment_output_lead(config, inputs, tmp_path):
     """Test conformed lead image properties."""
     size = (1, 2, 2, 2)

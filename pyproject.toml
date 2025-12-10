@@ -3,7 +3,8 @@ name = 'babyseg'
 requires-python = '>=3.11'
 
 [tool.pytest.ini_options]
-addopts = '--no-header'
+markers = ['slow']
+addopts = '--no-header -m "not slow"'
 minversion = '6.0'
 testpaths = ['tests']
 

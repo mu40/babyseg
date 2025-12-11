@@ -26,7 +26,7 @@ export APPTAINER_TMPDIR="$d"
 
 Download and run the script, which auto-detects container tools in your `PATH`:
 
-```
+```sh
 curl -Lo babyseg get.babyseg.io
 chmod +x babyseg
 ./babyseg -h
@@ -39,14 +39,14 @@ You can control BabySeg's behavior by setting environment variables or by editin
 Environment variables take precedence.
 For example, to use a GPU image in your home directory, downloading it if it does not exist:
 
-```
+```sh
 export BABYSEG_TAG="0.0-cu126"
 export BABYSEG_SIF="$HOME"
 ./babyseg
 ```
 
 To use Apptainer, even if Docker is also installed:
-```
+```sh
 BABYSEG_TOOL=apptainer ./babyseg
 ```
 
@@ -54,7 +54,7 @@ BABYSEG_TOOL=apptainer ./babyseg
 |:---------------|:-----------------------------------------------------------------------------|:--------------------------------------------------------------|
 | `BABYSEG_MNT`  | Define the working directory inside the container                            | Your current working directory                                |
 | `BABYSEG_SIF`  | Control where the tool stores and looks for  Apptainer or Singularity images | The directory containing the BabySeg script                   |
-| `BABYSEG_TAG`  | Select a newer or GPU image tag                                              | Latest CPU-only tag                                           |
+| `BABYSEG_TAG`  | Select a newer or GPU image tag                                              | Latest CPU-only tag at time of download                       |
 | `BABYSEG_TOOL` | Find a container tool by name or by absolute path                            | First found of `docker`, `apptainer`, `singularity`, `podman` |
 
 

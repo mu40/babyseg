@@ -3,8 +3,15 @@ name = 'babyseg'
 requires-python = '>=3.11'
 
 [tool.pytest.ini_options]
-markers = ['slow']
-addopts = '--no-header -m "not slow"'
+addopts = '--no-header -m "not install and not container"'
+markers = [
+    'install: tests for requirements install',
+    'container: tests using any container tool',
+    'docker: tests using Docker',
+    'apptainer: tests using Apptainer',
+    'singularity: tests using Singularity',
+    'podman: tests using Podman',
+]
 minversion = '6.0'
 testpaths = ['tests']
 

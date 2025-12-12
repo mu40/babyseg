@@ -11,7 +11,7 @@ The recommended way to run BabySeg is in a [container](https://hub.docker.com/r/
 
 ## Attribution
 
-If you find this work useful, please cite [the BabySeg paper](https://arxiv.org/abs/2512.05114):
+If you find this work useful, please cite the [BabySeg paper](https://arxiv.org/abs/2512.05114):
 
 ```bibtex
 @inproceedings{hoffmann2025deep,

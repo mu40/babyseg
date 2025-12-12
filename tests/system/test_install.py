@@ -5,7 +5,7 @@ import subprocess
 import venv
 
 
-@pytest.mark.slow
+@pytest.mark.install
 def test_clone_environment(tmp_path):
     """Test environment install from requirements file."""
     venv.EnvBuilder(with_pip=True).create(tmp_path)

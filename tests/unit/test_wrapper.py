@@ -12,32 +12,6 @@ TOOLS_SIF = {'apptainer', 'singularity'}
 TOOLS_ALL = {'docker', 'podman', *TOOLS_SIF}
 
 
-@pytest.fixture(scope='session')
-def docker_name():
-    """Provide a validated Docker image name for tests."""
-    name = 'BABYSEG_DOCKER_NAME'
-    value = os.getenv(name)
-    if not value:
-        pytest.skip(f'missing {name}')
-
-    assert '/' in value, f'invalid {name} value "{value}"'
-    return value
-
-
-@pytest.fixture
-def sif_factory(docker_name):
-    """Return factory to construct SIF file paths."""
-    def sif_file(folder, tag, touch=False):
-        f = pathlib.Path(docker_name).name
-        f = pathlib.Path(folder) / f'{f}_{tag}.sif'
-        if touch:
-            f.touch()
-
-        return f
-
-    return sif_file
-
-
 @pytest.fixture
 def tool(monkeypatch, tmp_path, request):
     """Create a mock container tool that logs calls."""
@@ -60,8 +34,35 @@ def tool(monkeypatch, tmp_path, request):
     return tool
 
 
+def test_docker_name():
+    """Validate the Docker Hub image name."""
+    name = docker.wrapper.IMAGE
+    assert isinstance(name, str)
+    assert name
+    assert not name.startswith('/')
+    assert not name.endswith('/')
+
+
+@pytest.mark.parametrize('tag', ['1', '7-cu5', '/root-cu/image.sif'])
+def test_is_cuda_image(tag):
+    """Test determining whether an image tag is CUDA-enabled."""
+    is_cuda = docker.wrapper.is_cuda_image(tag)
+    assert isinstance(is_cuda, bool)
+    assert is_cuda == ('-cu' in pathlib.Path(tag).name)
+
+
+@pytest.mark.parametrize('dtype', [str, pathlib.Path])
+def test_sif_image_path(dtype):
+    """Test SIF image path construction from directory and tag."""
+    base = pathlib.Path(docker.wrapper.IMAGE).name
+    tag = 'test-tag'
+    folder = dtype('a/b/')
+    expected = pathlib.Path(folder) / f'{base}_{tag}.sif'
+    assert docker.wrapper.sif_image_path(folder, tag) == expected
+
+
 @pytest.mark.parametrize('tool', TOOLS_ALL)
-def test_shell(tool, tmp_path, sif_factory, monkeypatch):
+def test_shell(tool, tmp_path, monkeypatch):
     """Verify entry-point shebang, executable bit, CLI argument handling."""
     code = 123
     arg = ('-A', '-B', 'file.json')
@@ -72,7 +73,8 @@ def test_shell(tool, tmp_path, sif_factory, monkeypatch):
     tool.chmod(0o755)
 
     # Create dummy SIF file, so SIF tools skip the `pull` call.
-    sif = sif_factory(tmp_path, docker.wrapper.TAG, touch=True)
+    sif = docker.wrapper.sif_image_path(tmp_path, docker.wrapper.TAG)
+    sif.touch()
     monkeypatch.setenv('BABYSEG_SIF', str(sif.parent))
     monkeypatch.setenv('BABYSEG_TOOL', str(tool))
 
@@ -111,7 +113,7 @@ def test_tool_missing(monkeypatch, capteesys):
     assert 'cannot locate' in f.err
 
 
-@pytest.mark.parametrize('tool', ['some-fancy-tool'], indirect=True)
+@pytest.mark.parametrize('tool', ['unknown-tool'], indirect=True)
 def test_tool_unknown(tool, capteesys):
     """Verify that an unknown existing tool raises an error."""
     assert docker.wrapper.main(argv=[]) > 0
@@ -131,7 +133,7 @@ def test_user(tool):
 
 
 @pytest.mark.parametrize('tool', ['docker'], indirect=True)
-def test_docker_run(tool, monkeypatch, docker_name):
+def test_docker_run(tool, monkeypatch):
     """Test the presence of flags in a Docker call."""
     tag = 'latest'
     monkeypatch.setenv('BABYSEG_TAG', tag)
@@ -144,7 +146,7 @@ def test_docker_run(tool, monkeypatch, docker_name):
     assert call[:2] == (tool.path, 'run')
     assert '--rm' in call
     assert f'{os.getcwd()}:/mnt' in call
-    assert call[-1] == f'{docker_name}:{tag}'
+    assert call[-1] == f'{docker.wrapper.IMAGE}:{tag}'
 
 
 @pytest.mark.parametrize('tool', TOOLS_SIF, indirect=True)
@@ -166,7 +168,7 @@ def test_sif_directory_error(tool, monkeypatch, capteesys):
 
 
 @pytest.mark.parametrize('tool', TOOLS_SIF, indirect=True)
-def test_sif_pull(tool, monkeypatch, docker_name, sif_factory):
+def test_sif_pull(tool, monkeypatch):
     """Test behavior when the SIF file is missing and `BABYSEG_SIF` unset."""
     tag = 'absent'
     monkeypatch.setenv('BABYSEG_TAG', tag)
@@ -177,8 +179,8 @@ def test_sif_pull(tool, monkeypatch, docker_name, sif_factory):
 
     # Default image path and URL.
     d = pathlib.Path(docker.wrapper.__file__).parent
-    sif = sif_factory(d, tag, touch=False)
-    hub = f'docker://{docker_name}:{tag}'
+    sif = docker.wrapper.sif_image_path(d, tag)
+    hub = f'docker://{docker.wrapper.IMAGE}:{tag}'
 
     # Expect valid `pull` arguments.
     (first,) = tool.call_args_list[0].args
@@ -186,9 +188,10 @@ def test_sif_pull(tool, monkeypatch, docker_name, sif_factory):
 
 
 @pytest.mark.parametrize('tool', TOOLS_SIF, indirect=True)
-def test_sif_run(tool, monkeypatch, sif_factory):
+def test_sif_run(tool, monkeypatch):
     """Test behavior when the SIF file exists."""
-    sif = sif_factory(tool.path.parent, docker.wrapper.TAG, touch=True)
+    sif = docker.wrapper.sif_image_path(tool.path.parent, docker.wrapper.TAG)
+    sif.touch()
     monkeypatch.setenv('BABYSEG_SIF', str(sif.parent))
 
     # Expect `run` call only.
@@ -229,7 +232,7 @@ def test_sif_gpu(tool, monkeypatch, tag):
     # Expect GPU flag when `-cu` in tag.
     tool.assert_called()
     (call,) = tool.call_args.args
-    assert ('-cu' in tag) == ('--nv' in call)
+    assert ('--nv' in call) == docker.wrapper.is_cuda_image(tag)
 
 
 @pytest.mark.parametrize('tool', TOOLS_SIF, indirect=True)
@@ -246,11 +249,12 @@ def test_error_code_on_pull(tool, monkeypatch):
 
 
 @pytest.mark.parametrize('tool', TOOLS_ALL, indirect=True)
-def test_error_code_on_run(tool, monkeypatch, sif_factory):
+def test_error_code_on_run(tool, monkeypatch):
     """Test if failure on `run` returns the correct code."""
     code = 13
     tool.return_value = subprocess.CompletedProcess(args='', returncode=code)
-    sif = sif_factory(tool.path.parent, docker.wrapper.TAG, touch=True)
+    sif = docker.wrapper.sif_image_path(tool.path.parent, docker.wrapper.TAG)
+    sif.touch()
     monkeypatch.setenv('BABYSEG_SIF', str(sif.parent))
 
     # Expect single call as SIF file exists.
@@ -259,11 +263,12 @@ def test_error_code_on_run(tool, monkeypatch, sif_factory):
 
 
 @pytest.mark.parametrize('tool', TOOLS_ALL, indirect=True)
-def test_arguments(tool, sif_factory, monkeypatch):
+def test_arguments(tool, monkeypatch):
     """Test if the wrapper forwards input arguments."""
     # Create SIF file, so SIF tools skip the `pull` call.
     argv = ('-a', '-B', 'file.json')
-    sif = sif_factory(tool.path.parent, docker.wrapper.TAG, touch=True)
+    sif = docker.wrapper.sif_image_path(tool.path.parent, docker.wrapper.TAG)
+    sif.touch()
     monkeypatch.setenv('BABYSEG_SIF', str(sif.parent))
 
     assert docker.wrapper.main(argv) == 0

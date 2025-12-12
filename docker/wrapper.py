@@ -30,6 +30,9 @@ SIF = pathlib.Path(__file__).parent
 # Container tool preference. Checked left to right.
 TOOLS = ('docker', 'apptainer', 'singularity', 'podman')
 
+# Image name on Docker Hub.
+IMAGE = 'freesurfer/babyseg'
+
 
 def error(message, code=1):
     """Print a message to standard error, propagating an exit code.
@@ -75,6 +78,43 @@ def read_env(name, default):
     return default
 
 
+def is_cuda_image(tag):
+    """Determine if a tag or path indicates a CUDA-enabled image.
+
+    Parameters
+    ----------
+    tag : str or os.PathLike
+        Tag or path.
+
+    Returns
+    -------
+    bool
+        If the tag or base name contains the string '-cu'.
+
+    """
+    return '-cu' in pathlib.Path(tag).name
+
+
+def sif_image_path(sif_dir, tag):
+    """Construct SIF image path for a given tag.
+
+    Parameters
+    ----------
+    sif_dir : str or os.PathLike
+        Directory containing SIF image.
+    tag : str
+        Tag appended to the hard-coded base name.
+
+    Returns
+    -------
+    pathlib.Path
+        Image path.
+
+    """
+    base = pathlib.Path(IMAGE).name
+    return pathlib.Path(sif_dir) / f'{base}_{tag}.sif'
+
+
 def main(argv=None):
     """Entry point for command-line execution.
 
@@ -88,7 +128,7 @@ def main(argv=None):
     host = read_env('BABYSEG_MNT', os.getcwd())
     tag = read_env('BABYSEG_TAG', TAG)
     sif = read_env('BABYSEG_SIF', SIF)
-    sif = pathlib.Path(sif) / f'babyseg_{tag}.sif'
+    sif = sif_image_path(sif, tag)
 
     tools = read_env('BABYSEG_TOOL', TOOLS)
     if isinstance(tools, str):
@@ -116,7 +156,7 @@ def main(argv=None):
     host = pathlib.Path(host).absolute()
     print(f'Will bind /mnt in container to BABYSEG_MNT="{host}"')
 
-    image = f'freesurfer/babyseg:{tag}'
+    image = f'{IMAGE}:{tag}'
     if tool.name != 'docker':
         image = f'docker://{image}'
 
@@ -148,7 +188,7 @@ def main(argv=None):
                 return p.returncode
 
         arg = ('run', '--pwd', '/mnt', '-e', '-B', f'{host}:/mnt', sif)
-        if '-cu' in sif.name:
+        if is_cuda_image(tag):
             arg = (arg[0], '--nv', *arg[1:])
 
     else:

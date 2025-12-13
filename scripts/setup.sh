@@ -3,8 +3,8 @@
 # Set up a virtual Python environment for development, update requirements.
 
 set -e
-ENV='.venv'
-IND='https://download.pytorch.org/whl/cu129'
+venv_dir='.venv'
+pt_index='https://download.pytorch.org/whl/cu129'
 
 
 if [ ! -f .gitignore ]; then
@@ -14,19 +14,19 @@ fi
 
 
 # Virtual environment.
-if [ ! -d "$ENV" ]; then
+if [ ! -d "$venv_dir/bin" ]; then
     python=$(
         find /usr/bin/ /usr/local/bin/ -name 'python*' |
         grep 'python[0-9.]*$' |
         sort -V |
         tail -n1
     )
-    "$python" -m venv "$ENV"
-    . "$ENV/bin/activate"
+    "$python" -m venv "$venv_dir"
+    . "$venv_dir/bin/activate"
 
     # Packages.
     pip install -U pip setuptools
-    pip install -i "$IND" torch
+    pip install -i "$pt_index" torch
     pip install \
         https://github.com/dalcalab/voxel/archive/24cb8b10d698dd1dbce14426080c954a50b27858.zip \
         https://github.com/mu40/katy/archive/741f772c5ec8c2d1598dddae061e40e8c9a46722.zip \
@@ -38,7 +38,7 @@ if [ ! -d "$ENV" ]; then
     && :
 
     # Requirements.
-    { echo "--extra-index-url $IND"; pip freeze; } >requirements.txt
+    { echo "--extra-index-url $pt_index"; pip freeze; } >requirements.txt
 fi
 
 
@@ -53,8 +53,12 @@ fi
 
 # Environment manager.
 cat >.envrc <<EOF
-[ -d '$ENV' ] && . '$ENV/bin/activate'
-export PYTHONPATH='$PWD'
+venv_dir='$venv_dir'
+if [ -d "\$venv_dir/bin" ]; then
+    export VIRTUAL_ENV="\$PWD/\$venv_dir"
+    PATH_add "\$VIRTUAL_ENV/bin"
+fi
+export PYTHONPATH="\$PWD"
 export CUDA_VISIBLE_DEVICES=0
 export BABYSEG_DOCKER_NAME='freesurfer/babyseg'
 EOF

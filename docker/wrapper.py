@@ -28,7 +28,7 @@ TAG = '0.0'
 SIF = pathlib.Path(__file__).parent
 
 # Container tool preference. Checked left to right.
-TOOLS = ('docker', 'apptainer', 'singularity', 'podman')
+TOOLS = ('apptainer', 'singularity', 'docker', 'podman')
 
 # Image name on Docker Hub.
 IMAGE = 'freesurfer/babyseg'

@@ -8,7 +8,7 @@ The tool can integrate information from multiple **NIfTI image** volumes of vari
 
 Segmenting a single image can use about 24 GB of memory on the CPU or under 2 GB of memory with a 24-GB GPU, depending on image size.
 We provide a [wrapper script](https://get.babyseg.io) that facilitates setup and use of BabySeg containers.
-It requires **Python 3** and supports any of the container platforms: **Docker**, **Podman**, **Apptainer**, or **Singularity**.
+It requires **Python** and supports any of the container platforms: **Docker**, **Podman**, **Apptainer**, or **Singularity**.
 
 
 ## Initial setup
@@ -55,7 +55,7 @@ BABYSEG_TOOL=apptainer ./babyseg
 | `BABYSEG_MNT`  | Define the working directory inside the container                            | Your current working directory                                |
 | `BABYSEG_SIF`  | Control where the tool stores and looks for  Apptainer or Singularity images | The directory containing the BabySeg script                   |
 | `BABYSEG_TAG`  | Select a newer or GPU image tag                                              | Latest CPU-only tag at time of download                       |
-| `BABYSEG_TOOL` | Find a container tool by name or by absolute path                            | First found of `docker`, `apptainer`, `singularity`, `podman` |
+| `BABYSEG_TOOL` | Find a container tool by name or by absolute path                            | First found of `apptainer`, `singularity`, `docker`, `podman` |
 
 
 ## Path resolution

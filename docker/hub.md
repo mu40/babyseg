@@ -45,9 +45,9 @@ export BABYSEG_SIF="$HOME"
 ./babyseg
 ```
 
-To use Apptainer, even if Docker is also installed:
+To use Docker, even if Apptainer is also installed:
 ```sh
-BABYSEG_TOOL=apptainer ./babyseg
+BABYSEG_TOOL=docker ./babyseg
 ```
 
 | Variable       | Purpose                                                                      | Default                                                       |

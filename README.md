@@ -26,4 +26,4 @@ If you find this work useful, please cite the BabySeg [paper](https://arxiv.org/
 
 ## Support
 
-Read the [FAQ](doc/faq.md), post questions to the [FreeSurfer mailing list](https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferSupport), or file bugs on GitHub.
+Read the [FAQ](doc/faq.md), post questions to the FreeSurfer [mailing list](https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferSupport), or file bugs on GitHub.

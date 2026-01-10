@@ -108,7 +108,7 @@ See [labels/README.md](../labels/README.md) for a list of anatomical structures.
 
 ## How do I compute label-wise statistics from the segmentation?
 
-You can save per-region statistics to `out.txt` using `mri_segstats` from [FreeSurfer](https://freesurfer.net), using BabySeg's [lookup table](../labels/BabySegColorLUT.txt):
+You can save per-region statistics to `out.txt` using `mri_segstats` from [FreeSurfer](https://freesurfer.net) with BabySeg's [lookup table](../labels/BabySegColorLUT.txt):
 
 ```sh
 mri_segstats --seg babyseg.nii --ctab BabySegColorLUT.txt --o out.txt

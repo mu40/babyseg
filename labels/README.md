@@ -1,6 +1,6 @@
 # BabySeg labels
 
-BabySeg's output labels follow the definitions used by [FreeSurfer](https://freesurfer.net).
+BabySeg's output labels derive from those used by [FreeSurfer](https://freesurfer.net).
 The probability-map channels correspond to the same structures, in the same order.
 
 | Index | Label value | Structure name              |

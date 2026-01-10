@@ -83,7 +83,7 @@ No. BabySeg runs fine on the CPU but will be faster on the GPU.
 ## How do I get the tool to use the GPU?
 
 GPU use requires a GPU-enabled container image.
-See the container [README](../docker/README.md) for details.
+See [docker/README.md](../docker/README.md) for details.
 
 
 ## How much memory does BabySeg need?
@@ -103,7 +103,7 @@ Yes. Given the same inputs and environment, BabySeg produces the same output.
 
 ## What labels does the tool segment?
 
-See labels/README.md for a list of anatomical structures.
+See [labels/README.md](../labels/README.md) for a list of anatomical structures.
 
 
 ## How do I compute label-wise statistics from the segmentation?

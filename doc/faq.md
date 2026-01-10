@@ -111,5 +111,5 @@ See labels/README.md for a list of anatomical structures.
 You can save per-region statistics to `out.txt` using `mri_segstats` from [FreeSurfer](https://freesurfer.net), using BabySeg's [lookup table](../labels/BabySegColorLUT.txt):
 
 ```sh
-mri_segstats seg babyseg.nii --ctab BabySegColorLUT.txt --o out.txt
+mri_segstats --seg babyseg.nii --ctab BabySegColorLUT.txt --o out.txt
 ```

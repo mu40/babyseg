@@ -1,12 +1,10 @@
-# BabySeg
+# BabySeg container images
 
-BabySeg is a brain segmentation tool for infants and young children, developed to delineate anatomical structures in MRI without preprocessing.
-The tool can integrate information from multiple **NIfTI image** volumes of variable size, resolution, and contrast in any order, provided that (1) their **header geometries** are correct, and (2) they are **properly aligned** in world space.
+This document describes how to run BabySeg using container images from [Docker Hub](https://hub.docker.com/r/freesurfer/babyseg).
 
 
 ## Requirements
 
-Segmenting a single image can use about 24 GB of memory on the CPU or under 2 GB of memory with a 24-GB GPU, depending on image size.
 We provide a [wrapper script](https://get.babyseg.io) that facilitates setup and use of BabySeg containers.
 It requires **Python** and supports any of the container platforms: **Docker**, **Podman**, **Apptainer**, or **Singularity**.
 
@@ -104,34 +102,6 @@ Display help:
 ```
 
 
-## Segmented structures
-
-| Index | Label value | Structure name              |
-|:-----:|:-----------:|:----------------------------|
-| 1     | 0           | Unknown                     |
-| 2     | 2           | Left-Cerebral-White-Matter  |
-| 3     | 3           | Left-Cerebral-Cortex        |
-| 4     | 4           | Left-Lateral-Ventricles     |
-| 5     | 8           | Left-Cerebellum             |
-| 6     | 10          | Left-Thalamus               |
-| 7     | 11          | Left-Caudate                |
-| 8     | 16          | Brain-Stem                  |
-| 9     | 17          | Left-Hippocampus            |
-| 10    | 18          | Left-Amygdala               |
-| 11    | 28          | Left-VentralDC              |
-| 12    | 41          | Right-Cerebral-White-Matter |
-| 13    | 42          | Right-Cerebral-Cortex       |
-| 14    | 43          | Right-Lateral-Ventricles    |
-| 15    | 47          | Right-Cerebellum            |
-| 16    | 49          | Right-Thalamus              |
-| 17    | 50          | Right-Caudate               |
-| 18    | 53          | Right-Hippocampus           |
-| 19    | 54          | Right-Amygdala              |
-| 20    | 60          | Right-VentralDC             |
-| 21    | 169         | Left-Basal-Ganglia          |
-| 22    | 176         | Right-Basal-Ganglia         |
-
-
 ## Tags and changes
 
 Simple tags such as `0.0` indicate CPU-only images.
@@ -140,8 +110,3 @@ The default `latest` tag points to the latest CPU-only image.
 
 * [`0.0`, `0.0-cu126`](https://github.com/mu40/babyseg/blob/071785c26be04bff357bbaa27627715932141807/docker/Dockerfile)\
 \- release initial images
-
-
-## Support
-
-Post questions or bug reports to the [FreeSurfer mailing list](https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferSupport) or on [GitHub](https://github.com/mu40/babyseg).

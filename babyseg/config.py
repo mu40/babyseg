@@ -246,7 +246,7 @@ def argparse(config, /, *options):
 
 
 def device(device):
-    """Select a device and fail if it is unavailable.
+    """Select a device and fail early if it is unavailable.
 
     Parameters
     ----------

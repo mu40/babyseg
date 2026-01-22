@@ -156,6 +156,7 @@ class GroupNet(nn.Module):
         rep=1,
         act=nn.ELU,
         conv=GroupConv,
+        normalize=True,
         clip=(0.01, 0.99),
     ):
         """Initialize the model.
@@ -181,12 +182,15 @@ class GroupNet(nn.Module):
             Activation function after each convolution.
         conv : str, optional
             Cross-convolution layer.
-        clip : tuple of float, optional
-            Clip at min-max quantiles in [0, 1] before normalizing.
+        normalize : bool, optional
+            Min-max normalize network input.
+        clip : (float or None, float or None), optional
+            Clip intensities to quantiles in [0, 1] during normalization.
 
         """
         super().__init__()
         mode = {1: 'linear', 2: 'bilinear', 3: 'trilinear'}[ndim]
+        self.normalize = normalize
         self.clip = torch.as_tensor(clip).ravel()
         if len(self.clip) != 2:
             raise ValueError(f'clip {clip} is not of length 2')
@@ -256,8 +260,8 @@ class GroupNet(nn.Module):
 
         """
         # Group dimension from channels: (B, G, 1, *space). Normalization.
-        with torch.no_grad():
-            x = x.unsqueeze(2)
+        x = x.unsqueeze(2)
+        if self.normalize:
             dim = range(2, x.ndim)
             x = kt.utility.normalize(x, dim, *self.clip)
 

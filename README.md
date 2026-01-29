@@ -11,7 +11,9 @@ The recommended way to run BabySeg is in a [container](docker/README.md).
 
 ## Attribution
 
-If you find this work useful, please cite the BabySeg [paper](https://arxiv.org/abs/2512.05114):
+If you find this work useful, please cite the relevant papers below.
+
+BabySeg [method](https://arxiv.org/abs/2512.05114):
 
 ```bibtex
 @inproceedings{hoffmann2025deep,
@@ -23,6 +25,20 @@ If you find this work useful, please cite the BabySeg [paper](https://arxiv.org/
 }
 ```
 
+Data [engine](https://arxiv.org/abs/2507.13458):
+
+```bibtex
+@article{hoffmann2025domain,
+  title={Domain-randomized deep learning for neuroimage analysis},
+  author={Hoffmann, Malte},
+  journal={IEEE Signal Processing Magazine},
+  volume={42},
+  number={4},
+  pages={78--90},
+  year={2025},
+  publisher={IEEE}
+}
+```
 
 ## Support
 

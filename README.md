@@ -9,6 +9,11 @@ The tool can integrate information from multiple NIfTI image volumes of variable
 The recommended way to run BabySeg is in a [container](docker/README.md).
 
 
+## Video
+
+Watch a 30-minute [video](https://www.youtube.com/watch?v=UZwUZQXhnBo) recording of a talk introducing the motivation and methodology behind BabySeg.
+
+
 ## Attribution
 
 If you find this work useful, please cite the relevant papers below.

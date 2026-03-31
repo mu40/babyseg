@@ -25,6 +25,7 @@ BabySeg [method](https://arxiv.org/abs/2512.05114):
   title={{Deep infant brain segmentation from multi-contrast MRI}},
   author={Hoffmann, Malte and Z{\"o}llei, Lilla and Dalca, Adrian V},
   booktitle={{Asilomar Conference on Signals, Systems, and Computers}},
+  pages={974--981},
   year={2025},
   publisher={IEEE}
 }

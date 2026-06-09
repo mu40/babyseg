@@ -135,7 +135,8 @@ def main(argv=None):
         tools = (tools,)
 
     # Report version. Avoid errors when piping, for example, to `head`.
-    signal.signal(signal.SIGPIPE, handler=signal.SIG_DFL)
+    if hasattr(signal, 'SIGPIPE'):
+        signal.signal(signal.SIGPIPE, handler=signal.SIG_DFL)
     hub = 'https://hub.docker.com/u/freesurfer'
     print(f'Running BabySeg version "{tag}" from {hub}')
 
@@ -144,6 +145,7 @@ def main(argv=None):
         tool = shutil.which(tool)
         if tool:
             tool = pathlib.Path(tool)
+            tool_name = tool.stem.lower()
             print(f'Selected "{tool}" to manage containers')
             break
 
@@ -157,7 +159,7 @@ def main(argv=None):
     print(f'Will bind /mnt in container to BABYSEG_MNT="{host}"')
 
     image = f'{IMAGE}:{tag}'
-    if tool.name != 'docker':
+    if tool_name != 'docker':
         image = f'docker://{image}'
 
     # Run Docker using the UID and GID of the host user. This user will own
@@ -166,16 +168,18 @@ def main(argv=None):
     # want. If we set UID and GID inside the container to the non-root host
     # user, as for Docker, these would get remapped according to /etc/subuid
     # outside, causing permission problems. Pretty-print help text with `-t`.
-    if tool.name in ('docker', 'podman'):
+    if tool_name in ('docker', 'podman'):
         arg = ('run', '--rm', '-v', f'{host}:/mnt', image)
         if sys.stdout.isatty():
             arg = (*arg[:-1], '-t', arg[-1])
-        if 'docker' in tool.name:
-            arg = (*arg[:-1], '-u', f'{os.getuid()}:{os.getgid()}', arg[-1])
+        if 'docker' in tool_name:
+            # Windows does not provide getuid/getgid; Docker can run without -u.
+            if hasattr(os, 'getuid') and hasattr(os, 'getgid'):
+                arg = (*arg[:-1], '-u', f'{os.getuid()}:{os.getgid()}', arg[-1])
 
     # For Apptainer or Singularity, the users inside and outside the container
     # are the same. The working directory is also the same, unless we set it.
-    elif tool.name in ('apptainer', 'singularity'):
+    elif tool_name in ('apptainer', 'singularity'):
         if not sif.parent.is_dir():
             return error('variable BABYSEG_SIF does not point to a directory')
 

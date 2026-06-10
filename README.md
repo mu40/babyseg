@@ -3,16 +3,13 @@
 BabySeg is a brain segmentation tool for infants and young children, designed to delineate anatomical structures in MRI without preprocessing.
 The tool can integrate information from multiple NIfTI image volumes of variable contrast, shape, and resolution in any order, provided that (1) their header geometries are correct, and (2) they are properly aligned in world space.
 
-
 ## Running BabySeg
 
 The recommended way to run BabySeg is in a [container](docker/README.md).
 
-
 ## Video
 
 Watch a 30-minute [video](https://www.youtube.com/watch?v=UZwUZQXhnBo) recording of a talk introducing the motivation and methodology behind BabySeg.
-
 
 ## Attribution
 

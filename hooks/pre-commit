@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Run the spell checker, linter, and unit tests on every commit. The working
+# Run spell checker, linters, and unit tests on every commit. The working
 # directory of this script will be the top level of the Git repository.
 
 set -e
@@ -15,11 +15,16 @@ trap exit INT TERM
 
 
 # Identify relevant files. BusyBox's `awk` cannot print null characters.
+list() { git diff -z --staged --name-only --diff-filter=ACMRT -- "$@" ; }
 staged="$d/staged"
 python="$d/py"
+markdown="$d/md"
+yaml="$d/yaml"
 shell="$d/sh"
-git diff -z --staged --name-only --diff-filter=ACMRT           >"$staged"
-git diff -z --staged --name-only --diff-filter=ACMRT -- '*.py' >"$python"
+list                     >"$staged"
+list '*.py'              >"$python"
+list '*.md' '*.markdown' >"$markdown"
+list '*.yaml' '*.yml'    >"$yaml"
 xargs -0r file -i <"$staged" |
     awk -F: '/x-shellscript/ { print $1 }' |
         tr '\n' '\0' >"$shell"
@@ -31,28 +36,36 @@ git checkout-index --prefix="$d/" -a
 cd "$d"
 
 
-# Spell-check staged files.
 if [ -s "$staged" ]; then
     echo "Spell-checking tree"
     xargs -0 typos <"$staged"
 fi
 
 
-# Lint staged Python files.
 if [ -s "$python" ]; then
     echo "Running Python linter"
     xargs -0 ruff check -q <"$python"
 fi
 
 
-# Lint staged shell scripts.
 if [ -s "$shell" ]; then
     echo "Linting shell scripts"
     xargs -0 shellcheck <"$shell"
 fi
 
 
-# Run unit tests.
+if [ -s "$markdown" ]; then
+    echo "Validating Markdown syntax"
+    xargs -0 pymarkdown scan <"$markdown"
+fi
+
+
+if [ -s "$yaml" ]; then
+    echo "Validating YAML syntax"
+    xargs -0 yamllint -s <"$yaml"
+fi
+
+
 if [ "$run_tests" -eq 1 ]; then
     echo "Running unit tests"
     pytest -q tests/unit

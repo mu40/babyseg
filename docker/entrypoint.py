@@ -76,7 +76,7 @@ def main(argv=None):
         ''',
     )
 
-    # ruff: noqa: E501
+    # ruff: disable[E501]
     p.add_argument('images', metavar='image', type=nifti, nargs='+', help='NIfTI input images')
     p.add_argument('-c', dest='config', default=d['c'], help='model JSON file')
     p.add_argument('-k', dest='checkpoint', default=d['k'], help='model weights')
@@ -87,7 +87,7 @@ def main(argv=None):
     p.add_argument('-j', dest='threads', default=d['j'], type=int, help='CPU threads (default: auto)')
     p.add_argument('-v', dest='verbose', default=d['v'], action='count', help='repeat to increase verbosity')
     p.add_argument('-V', version=babyseg.__version__, action='version', help='print version and exit')
-    # ruff: enable: E501
+    # ruff: enable[E501]
 
     if argv is None:
         argv = sys.argv[1:]

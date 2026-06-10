@@ -27,15 +27,7 @@ if [ ! -d "$venv_dir/bin" ]; then
     # Packages.
     pip install -U pip setuptools
     pip install -i "$pt_index" torch
-    pip install \
-        https://github.com/dalcalab/voxel/archive/24cb8b10d698dd1dbce14426080c954a50b27858.zip \
-        https://github.com/mu40/katy/archive/741f772c5ec8c2d1598dddae061e40e8c9a46722.zip \
-        nibabel \
-        pytest \
-        ruff \
-        shellcheck-py \
-        typos \
-    && :
+    pip install -e '.[dev]'
 
     # Requirements.
     { echo "--extra-index-url $pt_index"; pip freeze; } >requirements.txt

@@ -1,0 +1,75 @@
+---
+name: Lint
+
+"on":
+  workflow_dispatch: {}
+  pull_request: {}
+  push: {}
+
+env:
+  CLICOLOR: 1
+
+jobs:
+  markdown:
+    name: Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install linter
+        run: pip install pymarkdownlnt
+      - name: Run linter
+        run: pymarkdown scan -r --respect-gitignore .
+
+  python:
+    name: Python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install linter
+        run: pip install ruff
+      - name: Run linter
+        run: ruff check --output-format=github
+
+  shell:
+    name: Shell
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v6
+      - name: Find shell scripts
+        run: |
+          git ls-files -z |
+            xargs -0 file -i |
+            awk -F: '/x-shellscript/ { print $(NF-1) }' |
+            tr '\n' '\0' |
+            tee $RUNNER_TEMP/scripts
+      - name: Run linter
+        run: xargs -0 shellcheck <$RUNNER_TEMP/scripts
+
+  spelling:
+    name: Spelling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v6
+      - name: Run linter
+        uses: crate-ci/typos@v1
+
+  yaml:
+    name: YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v6
+      - name: Run linter
+        run: yamllint -s .

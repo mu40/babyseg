@@ -1,6 +1,36 @@
+[build-system]
+build-backend = 'setuptools.build_meta'
+requires = ['setuptools']
+
 [project]
+authors = [{name = 'Malte Hoffmann'}]
+dependencies = [
+    'katy @ https://github.com/mu40/katy/archive/0a8fe56ccbbf6b9a1ed099048a5d0ab5eff816b3.zip',
+    'nibabel',
+    'torch>=2.7',
+    'voxel @ https://github.com/dalcalab/voxel/archive/b32fa86ac2330a7608b246d23a1a763db02caf70.zip',
+    ]
+description = 'Brain segmentation across the first years of life'
+dynamic = ['version']
+license = 'MIT'
 name = 'babyseg'
 requires-python = '>=3.11'
+urls.homepage = 'https://babyseg.io'
+
+[project.optional-dependencies]
+dev = [
+    'pymarkdownlnt',
+    'pytest',
+    'ruff',
+    'shellcheck-py',
+    'typos',
+    'yamllint',
+]
+
+[tool.pymarkdown]
+mode.strict-config = true
+plugins.MD013.enabled = false  # line-length
+plugins.MD024.enabled = false  # no-duplicate-heading
 
 [tool.pytest.ini_options]
 addopts = '--no-header -m "not install and not container"'
@@ -34,6 +64,10 @@ lines-after-imports = 2
 
 [tool.ruff.lint.pydocstyle]
 convention = 'numpy'
+
+[tool.setuptools]
+dynamic.version = {attr = 'babyseg.__version__'}
+packages = ['babyseg']
 
 [tool.typos.default.extend-words]
 arange = 'arange'

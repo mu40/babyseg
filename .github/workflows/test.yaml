@@ -1,0 +1,27 @@
+---
+name: Test
+
+"on":
+  workflow_dispatch: {}
+  pull_request: {}
+  push: {}
+
+jobs:
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install CPU PyTorch
+        run: pip install -i https://download.pytorch.org/whl/cpu torch
+      - name: Install dependencies
+        run: pip install -e .
+      - name: Install pytest
+        run: pip install pytest
+      - name: Run tests
+        run: PYTHONPATH=. pytest -v tests/unit

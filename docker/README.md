@@ -2,12 +2,10 @@
 
 This document describes how to run BabySeg using container images from [Docker Hub](https://hub.docker.com/r/freesurfer/babyseg).
 
-
 ## Requirements
 
 We provide a [wrapper script](https://get.babyseg.io) that facilitates setup and use of BabySeg containers.
 It requires **Python** and supports any of the container platforms: **Docker**, **Podman**, **Apptainer**, or **Singularity**.
-
 
 ## Initial setup
 
@@ -30,7 +28,6 @@ chmod +x babyseg
 ./babyseg -h
 ```
 
-
 ## Optional settings
 
 You can control BabySeg's behavior by setting environment variables or by editing the top of the script.
@@ -44,6 +41,7 @@ export BABYSEG_SIF="$HOME"
 ```
 
 To use Docker, even if Apptainer is also installed:
+
 ```sh
 BABYSEG_TOOL=docker ./babyseg
 ```
@@ -55,13 +53,11 @@ BABYSEG_TOOL=docker ./babyseg
 | `BABYSEG_TAG`  | Select a newer or GPU image tag                                              | Latest CPU-only tag at time of download                       |
 | `BABYSEG_TOOL` | Find a container tool by name or by absolute path                            | First found of `apptainer`, `singularity`, `docker`, `podman` |
 
-
 ## Path resolution
 
 For convenience, BabySeg temporarily mounts the host directory set in environment variable `BABYSEG_MNT` to `/mnt` inside the container, which serves as its working directory.
 If you do not set `BABYSEG_MNT`, it defaults to your current directory.
 This enables BabySeg to access relative paths under your working directory without requiring you to set `BABYSEG_MNT`.
-
 
 ## Usage examples
 
@@ -100,7 +96,6 @@ Display help:
 ```sh
 ./babyseg -h
 ```
-
 
 ## Tags and changes
 

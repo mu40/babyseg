@@ -172,10 +172,14 @@ def main(argv=None):
         arg = ('run', '--rm', '-v', f'{host}:/mnt', image)
         if sys.stdout.isatty():
             arg = (*arg[:-1], '-t', arg[-1])
-        if 'docker' in tool_name:
-            # Windows does not provide getuid/getgid; Docker can run without -u.
-            if hasattr(os, 'getuid') and hasattr(os, 'getgid'):
-                arg = (*arg[:-1], '-u', f'{os.getuid()}:{os.getgid()}', arg[-1])
+
+        # Windows does not provide getuid/getgid; Docker can run without `-u`.
+        if (
+            tool_name == 'docker'
+            and hasattr(os, 'getuid')
+            and hasattr(os, 'getgid')
+        ):
+            arg = (*arg[:-1], '-u', f'{os.getuid()}:{os.getgid()}', arg[-1])
 
     # For Apptainer or Singularity, the users inside and outside the container
     # are the same. The working directory is also the same, unless we set it.

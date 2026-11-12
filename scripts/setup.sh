@@ -17,16 +17,21 @@ fi
 # Virtual environment.
 if ! "$venv_dir/bin/python" -c 'import pip' 2>/dev/null; then
     "$python" -m venv --clear "$venv_dir"
-    . "$venv_dir/bin/activate"
-
-    # Packages.
-    pip install -U pip setuptools
-    pip install -i "$pt_index" torch
-    pip install -e '.[dev]'
-
-    # Requirements.
-    { echo "--extra-index-url $pt_index"; pip freeze; } >requirements.txt
+    "$venv_dir/bin/python" -m pip install -U pip
 fi
+. "$venv_dir/bin/activate"
+
+
+# Packages.
+pip install -i "$pt_index" torch
+pip install -e '.[dev]'
+
+
+# Requirements.
+{
+    echo "--extra-index-url $pt_index"
+    pip freeze --exclude-editable
+} >requirements.txt
 
 
 # Git hooks.

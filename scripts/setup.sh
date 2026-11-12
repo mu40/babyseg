@@ -3,15 +3,10 @@
 # Set up a virtual Python environment for development, update requirements.
 
 set -e
+cd "$(dirname "$0")/.."
 venv_dir='.venv'
 pt_index='https://download.pytorch.org/whl/cu129'
 python="${1:-python3}"
-
-
-if [ ! -f .gitignore ]; then
-    echo "ERROR: not in the top-level repository directory"
-    exit 1
-fi
 
 
 # Virtual environment.
@@ -36,10 +31,9 @@ pip install -e '.[dev]'
 
 # Git hooks.
 if [ -d .git/hooks ]; then
-    cp -v hooks/* .git/hooks
-    if f=$(command -v commit-msg.py 2>/dev/null); then
-        ln -vsfn "$f" .git/hooks/commit-msg
-    fi
+    for f in hooks/*; do
+        ln -sfn "../../$f" ".git/hooks/${f#hooks/}"
+    done
 fi
 
 

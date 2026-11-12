@@ -5,6 +5,7 @@
 set -e
 venv_dir='.venv'
 pt_index='https://download.pytorch.org/whl/cu129'
+python="${1:-python3}"
 
 
 if [ ! -f .gitignore ]; then
@@ -14,14 +15,8 @@ fi
 
 
 # Virtual environment.
-if [ ! -d "$venv_dir/bin" ]; then
-    python=$(
-        find /usr/bin/ /usr/local/bin/ -name 'python*' |
-        grep 'python[0-9.]*$' |
-        sort -V |
-        tail -n1
-    )
-    "$python" -m venv "$venv_dir"
+if ! "$venv_dir/bin/python" -c 'import pip' 2>/dev/null; then
+    "$python" -m venv --clear "$venv_dir"
     . "$venv_dir/bin/activate"
 
     # Packages.
